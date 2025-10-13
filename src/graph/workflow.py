@@ -122,6 +122,7 @@ def run_workflow(query: str, client_id: str) -> dict:
         "plan": "",
         "needs_portfolio": False,
         "needs_market": False,
+        "wants_recommendations": False,
         "response": "",
         "validated": False,
         "messages": []

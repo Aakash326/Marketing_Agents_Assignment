@@ -24,6 +24,7 @@ class GraphState(TypedDict):
     plan: str
     needs_portfolio: bool
     needs_market: bool
+    wants_recommendations: bool  # True only if user explicitly asks for advice
 
     # Response and validation
     response: str

@@ -26,6 +26,7 @@ def market_node(state: Dict) -> Dict:
     query = state.get("query", "")
     portfolio_data = state.get("portfolio_data", {})
     existing_response = state.get("response", "")
+    wants_recommendations = state.get("wants_recommendations", False)
 
     # Determine which stocks to analyze
     tickers = []
@@ -64,8 +65,19 @@ def market_node(state: Dict) -> Dict:
     market_text = format_market_data_for_llm(market_data)
     news_text = format_news_for_llm(news_data)
 
-    # Create analysis prompt
-    analysis_prompt = f"""You are a market analysis agent helping a client understand market conditions and stock performance.
+    # Create analysis prompt based on whether user wants recommendations
+    if not wants_recommendations:
+        # INFORMATION MODE: Just report market data
+        analysis_prompt = f"""You are a market analysis agent providing factual market information.
+
+# RESPONSE GUIDELINES:
+# - Report prices, performance, and news factually
+# - "What's the price?" → Report current price
+# - "How's it performing?" → Show performance numbers
+# - "What's the news?" → Summarize recent news
+# - DO NOT suggest what to buy or sell
+# - DO NOT give investment recommendations
+# - Just report the market data
 
 User Query: "{query}"
 
@@ -76,9 +88,9 @@ Recent News:
 {news_text}
 """
 
-    # If there's already a response from portfolio agent, build on it
-    if existing_response:
-        analysis_prompt += f"""
+        # If there's already a response from portfolio agent, build on it
+        if existing_response:
+            analysis_prompt += f"""
 
 Previous Analysis (from Portfolio Agent):
 {existing_response}
@@ -87,12 +99,60 @@ Based on the market data and news above, enhance the previous analysis by adding
 Provide specific information about current prices, performance, and any relevant news.
 Integrate this market information with the portfolio context.
 
-Enhanced Response:"""
-    else:
-        analysis_prompt += """
+IMPORTANT: Continue with the same factual tone. NO investment recommendations.
 
-Based on the market data and news above, provide a helpful and accurate answer to the user's query.
+Enhanced Response:"""
+        else:
+            analysis_prompt += """
+
+Based on the market data and news above, provide a factual answer to the user's query.
 Be specific and reference actual prices and performance metrics.
+DO NOT suggest what to buy or sell.
+
+Response:"""
+
+    else:
+        # ADVISORY MODE: Provide market context for decision-making
+        analysis_prompt = f"""You are a market analysis agent providing educational market context.
+
+# RESPONSE GUIDELINES (Advisory Mode):
+# - Provide market context for decision-making
+# - Present considerations, NOT commands
+# - Use "you might consider" NOT "you should"
+# - Present market factors and trends, not directives
+
+User Query: "{query}"
+
+Market Data:
+{market_text}
+
+Recent News:
+{news_text}
+"""
+
+        # If there's already a response from portfolio agent, build on it
+        if existing_response:
+            analysis_prompt += f"""
+
+Previous Analysis (from Portfolio Agent):
+{existing_response}
+
+Based on the market data and news above, enhance the previous analysis with market considerations.
+Use phrases like "one factor to consider" or "market conditions suggest" rather than "you should".
+Present options and trade-offs based on market data.
+
+IMPORTANT: Maintain the educational tone with disclaimers from the previous response.
+
+Enhanced Response:"""
+        else:
+            analysis_prompt += """
+
+Based on the market data and news above, provide market considerations.
+Use phrases like "you might consider" or "one factor to consider".
+Present market trends and factors, not commands.
+
+IMPORTANT: End your response with:
+"Note: This is educational analysis, not financial advice. Please consult a licensed financial advisor for personalized investment recommendations."
 
 Response:"""
 

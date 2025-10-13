@@ -28,17 +28,22 @@ Client ID: {client_id}
 Analyze this query and determine:
 1. Does this query require portfolio data analysis? (Information about client's holdings, stocks they own, etc.)
 2. Does this query require market data analysis? (Stock prices, news, market performance, etc.)
+3. Is the user asking for investment advice/recommendations? (YES only if query explicitly contains: "how to improve", "what should I do", "recommendations", "suggestions", "advice", "how can I", "should I buy", "should I sell")
 
 Consider these guidelines:
-- Queries about "what stocks do I own" or "my holdings" → Need portfolio data
-- Queries about "price of [stock]" or "how is [stock] doing" → Need market data
-- Queries about "my [stock] holdings" or "[stock] in my portfolio" → Need BOTH portfolio and market data
-- Queries about portfolio performance or gains/losses → Need BOTH
+- Queries about "what stocks do I own" or "my holdings" → Need portfolio data, NO advice
+- Queries about "price of [stock]" or "how is [stock] doing" → Need market data, NO advice
+- Queries about "my [stock] holdings" or "[stock] in my portfolio" → Need BOTH portfolio and market data, NO advice
+- Queries about portfolio performance or gains/losses → Need BOTH, NO advice
+- Queries asking "how to improve" or "what should I do" → Need data + Wants advice
+
+IMPORTANT: Most queries just want information. Only set "Wants Recommendations" to YES if the user explicitly asks for advice or suggestions.
 
 Respond with your analysis and clear decisions in this format:
 Analysis: [Your reasoning]
 Portfolio Data Needed: [YES or NO]
 Market Data Needed: [YES or NO]
+Wants Recommendations: [YES or NO]
 """
 
     # Get LLM decision
@@ -49,6 +54,7 @@ Market Data Needed: [YES or NO]
     # Parse the response to extract decisions
     needs_portfolio = "Portfolio Data Needed: YES" in plan or "portfolio data needed: yes" in plan.lower()
     needs_market = "Market Data Needed: YES" in plan or "market data needed: yes" in plan.lower()
+    wants_recommendations = "Wants Recommendations: YES" in plan or "wants recommendations: yes" in plan.lower()
 
     # Fallback logic if parsing fails - be conservative and enable both
     if not needs_portfolio and not needs_market:
@@ -68,9 +74,18 @@ Market Data Needed: [YES or NO]
             needs_portfolio = True
             needs_market = True
 
+    # Fallback for wants_recommendations - only True if explicit advice keywords present
+    if not wants_recommendations:
+        query_lower = query.lower()
+        advice_keywords = ["how to improve", "what should i do", "recommendations", "suggestions",
+                          "advice", "how can i", "should i buy", "should i sell", "optimize",
+                          "rebalance", "diversify"]
+        wants_recommendations = any(keyword in query_lower for keyword in advice_keywords)
+
     return {
         **state,
         "plan": plan,
         "needs_portfolio": needs_portfolio,
-        "needs_market": needs_market
+        "needs_market": needs_market,
+        "wants_recommendations": wants_recommendations
     }
