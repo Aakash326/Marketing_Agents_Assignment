@@ -1,14 +1,33 @@
+# Core LangGraph and LangChain dependencies
 langgraph==0.6.10
 langchain==0.3.15
 langchain-openai==0.2.14
 langchain-community==0.3.15
 langchain-core>=0.3.31
+
+# Data processing
 pandas==2.2.0
 openpyxl==3.1.2
+
+# Market data and APIs
 yfinance==0.2.48
 requests==2.32.3
+
+# UI (Streamlit)
 streamlit==1.40.0
+
+# Configuration
 python-dotenv==1.0.1
+
+# SEC filings (Feature 1)
 sec-edgar-downloader==5.0.2
+
+# RAG and embeddings (Feature 2)
 chromadb==0.4.22
 sentence-transformers==2.3.1
+
+# FastAPI backend dependencies
+fastapi==0.109.0
+uvicorn[standard]==0.27.0
+pydantic>=2.7.4  # Updated to be compatible with langgraph
+pydantic-settings>=2.4.0  # Updated to be compatible with langchain-community
