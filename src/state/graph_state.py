@@ -3,7 +3,7 @@ Shared state definition for the LangGraph workflow.
 Uses TypedDict to define the state schema.
 """
 
-from typing import TypedDict, Optional
+from typing import TypedDict, Optional, List, Dict
 
 
 class GraphState(TypedDict):
@@ -25,6 +25,16 @@ class GraphState(TypedDict):
     needs_portfolio: bool
     needs_market: bool
     wants_recommendations: bool  # True only if user explicitly asks for advice
+
+    # Collaboration (Feature 3)
+    collaboration_findings: Optional[dict]  # Synthesis from collaboration agent
+
+    # Session management (Feature 4)
+    conversation_history: List[Dict[str, str]]  # Previous Q&A pairs
+
+    # Enhanced validation (Feature 5)
+    needs_clarification: bool  # True if query is ambiguous
+    clarification_message: str  # Question to ask user for clarification
 
     # Response and validation
     response: str

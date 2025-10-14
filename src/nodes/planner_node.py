@@ -18,12 +18,25 @@ def planner_node(state: Dict) -> Dict:
     """
     query = state.get("query", "")
     client_id = state.get("client_id", "")
+    conversation_history = state.get("conversation_history", [])
+
+    # Format conversation history if available (Feature 4: Session Management)
+    history_context = ""
+    if conversation_history and len(conversation_history) > 0:
+        history_context = "\n\nPrevious Conversation (for context):\n"
+        # Show last 3 interactions
+        for msg in conversation_history[-3:]:
+            role = msg.get("role", "").capitalize()
+            content = msg.get("content", "")[:200]  # Truncate long messages
+            history_context += f"{role}: {content}...\n"
+        history_context += "\nIMPORTANT: Consider this history when interpreting the current query. User may reference previous responses (e.g., 'the first one', 'that stock', 'tell me more').\n"
 
     # Create planning prompt
     planning_prompt = f"""You are a planning agent for a portfolio and market intelligence system.
 
 User Query: "{query}"
 Client ID: {client_id}
+{history_context}
 
 Analyze this query and determine:
 1. Does this query require portfolio data analysis? (Information about client's holdings, stocks they own, etc.)

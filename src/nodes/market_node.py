@@ -11,6 +11,8 @@ from src.tools.market_tools import (
     format_news_for_llm
 )
 from src.tools.portfolio_tools import get_client_holdings
+from src.tools.sec_tools import fetch_latest_filing, extract_risk_factors, format_sec_data_for_llm
+from src.tools.rag_tools import SimpleKnowledgeBase
 
 
 def market_node(state: Dict) -> Dict:
@@ -65,6 +67,43 @@ def market_node(state: Dict) -> Dict:
     market_text = format_market_data_for_llm(market_data)
     news_text = format_news_for_llm(news_data)
 
+    # Fetch SEC filings for key holdings (limit to 2 to keep it simple and fast)
+    sec_data = {}
+    if tickers and len(tickers) > 0:
+        # Only fetch for first 2 holdings to avoid slowness
+        for ticker in tickers[:2]:
+            if ticker.upper() != "CASH":
+                try:
+                    filing = fetch_latest_filing(ticker, "10-K")
+                    if filing.get("success"):
+                        risks = extract_risk_factors(filing["text"])
+                        sec_data[ticker] = {
+                            "filing_type": "10-K",
+                            "risk_factors": risks
+                        }
+                except Exception as e:
+                    print(f"Error fetching SEC filing for {ticker}: {e}")
+
+    # Format SEC data
+    sec_text = format_sec_data_for_llm(sec_data)
+
+    # Search knowledge base for relevant context using RAG
+    rag_context = ""
+    try:
+        kb = SimpleKnowledgeBase()
+        kb_results = kb.search(query, n_results=3)
+
+        if kb_results:
+            rag_context = "\n\nRelevant Context from Knowledge Base:\n"
+            rag_context += "=" * 60 + "\n"
+            for result in kb_results:
+                ticker = result['metadata'].get('ticker', 'Unknown')
+                doc_type = result['metadata'].get('type', 'document')
+                rag_context += f"\n[{ticker} - {doc_type}]:\n{result['text'][:500]}...\n"
+    except Exception as e:
+        rag_context = ""
+        print(f"RAG search error: {e}")
+
     # Create analysis prompt based on whether user wants recommendations
     if not wants_recommendations:
         # INFORMATION MODE: Just report market data
@@ -83,6 +122,10 @@ User Query: "{query}"
 
 Market Data:
 {market_text}
+
+{sec_text}
+
+{rag_context}
 
 Recent News:
 {news_text}
@@ -125,6 +168,10 @@ User Query: "{query}"
 
 Market Data:
 {market_text}
+
+{sec_text}
+
+{rag_context}
 
 Recent News:
 {news_text}

@@ -34,33 +34,20 @@ def portfolio_node(state: Dict) -> Dict:
     # Create analysis prompt based on whether user wants recommendations
     if not wants_recommendations:
         # INFORMATION MODE: Just answer the question factually
-        analysis_prompt = f"""You are a portfolio analysis agent providing factual information.
+        analysis_prompt = f"""You are a portfolio analysis agent. The user is asking: "{query}"
 
-# RESPONSE GUIDELINES:
-# - Answer queries factually with NO recommendations
-# - "What do I own?" → List holdings only
-# - "How's it performing?" → Show numbers only
-# - "What's my allocation?" → Show breakdown only
-# - DO NOT suggest what to buy or sell
-# - DO NOT give investment recommendations
-# - Just answer what they asked
+Below is their complete portfolio data. Answer their question using ONLY this information.
 
-Client ID: {client_id}
-User Query: "{query}"
-
-Portfolio Data:
 {portfolio_text}
 
-Provide a clear, factual answer to the user's query:
-- List what they own if asked
-- Show performance numbers if asked
-- Describe their current allocation if asked
-- Be specific and reference actual holdings
-- DO NOT suggest what they should buy or sell
-- DO NOT give investment recommendations
-- Just answer the question directly
+Instructions:
+1. If they ask "what stocks do I own" or similar - list ALL the holdings shown above
+2. Do NOT try to search for additional data
+3. Do NOT mention ticker symbols from their question (like "DO" or "OWN") - these are just English words
+4. Simply answer based on the portfolio data provided above
+5. Be factual and direct
 
-Response:"""
+Your response:"""
     else:
         # ADVISORY MODE: Provide considerations with disclaimers
         analysis_prompt = f"""You are a portfolio analysis agent providing educational considerations.

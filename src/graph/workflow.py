@@ -8,6 +8,7 @@ from src.state.graph_state import GraphState
 from src.nodes.planner_node import planner_node
 from src.nodes.portfolio_node import portfolio_node
 from src.nodes.market_node import market_node
+from src.nodes.collaboration_node import collaboration_node, needs_collaboration
 from src.nodes.validator_node import validator_node
 
 
@@ -47,6 +48,20 @@ def route_after_portfolio(state: GraphState) -> Literal["market_agent", "validat
         return "validator"
 
 
+def route_after_market(state: GraphState) -> Literal["collaboration_agent", "validator"]:
+    """
+    Route after market agent.
+
+    Checks if collaboration is needed (complex query with both portfolio + market context).
+    If yes -> collaboration_agent
+    Otherwise -> validator
+    """
+    if needs_collaboration(state):
+        return "collaboration_agent"
+    else:
+        return "validator"
+
+
 def create_workflow() -> StateGraph:
     """
     Create and compile the LangGraph workflow.
@@ -61,6 +76,7 @@ def create_workflow() -> StateGraph:
     workflow.add_node("planner", planner_node)
     workflow.add_node("portfolio_agent", portfolio_node)
     workflow.add_node("market_agent", market_node)
+    workflow.add_node("collaboration_agent", collaboration_node)  # Feature 3: Collaboration
     workflow.add_node("validator", validator_node)
 
     # Set entry point
@@ -87,8 +103,18 @@ def create_workflow() -> StateGraph:
         }
     )
 
-    # Market agent always goes to validator
-    workflow.add_edge("market_agent", "validator")
+    # Market agent can go to collaboration or validator (Feature 3)
+    workflow.add_conditional_edges(
+        "market_agent",
+        route_after_market,
+        {
+            "collaboration_agent": "collaboration_agent",
+            "validator": "validator"
+        }
+    )
+
+    # Collaboration agent always goes to validator
+    workflow.add_edge("collaboration_agent", "validator")
 
     # Validator goes to END
     workflow.add_edge("validator", END)
@@ -99,13 +125,14 @@ def create_workflow() -> StateGraph:
     return app
 
 
-def run_workflow(query: str, client_id: str) -> dict:
+def run_workflow(query: str, client_id: str, conversation_history: list = None) -> dict:
     """
     Run the workflow with a user query.
 
     Args:
         query: User's question
         client_id: Client identifier (e.g., 'CLT-001')
+        conversation_history: Optional conversation history for session management (Feature 4)
 
     Returns:
         Final state after workflow execution
@@ -123,6 +150,10 @@ def run_workflow(query: str, client_id: str) -> dict:
         "needs_portfolio": False,
         "needs_market": False,
         "wants_recommendations": False,
+        "collaboration_findings": None,  # Feature 3
+        "conversation_history": conversation_history or [],  # Feature 4
+        "needs_clarification": False,  # Feature 5
+        "clarification_message": "",  # Feature 5
         "response": "",
         "validated": False,
         "messages": []
