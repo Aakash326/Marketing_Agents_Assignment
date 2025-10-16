@@ -1,10 +1,75 @@
-# Portfolio & Market Intelligence System
+# Portfolio Intelligence System
 
-A multi-agent AI system built with **LangGraph** that provides intelligent portfolio and market analysis for investment firms. The system uses specialized AI agents that collaborate to answer complex questions about client portfolios and market conditions.
+A production-ready AI-powered portfolio analysis system with a **multi-agent FastAPI backend** and **modern React frontend**. The system uses specialized AI agents that collaborate to provide intelligent portfolio and market analysis.
+
+## 🎉 Complete System - Backend + Frontend
+
+This repository contains both:
+- ✅ **FastAPI Backend** with multi-agent AI system
+- ✅ **React Frontend** with modern UI/UX
+
+## 🚀 Quick Start
+
+### One-Command Start (Recommended)
+
+```bash
+# Make scripts executable (first time only)
+chmod +x start.sh stop.sh
+
+# Start everything (activates conda env + starts both servers)
+./start.sh
+```
+
+This automatically:
+1. ✅ Activates conda environment `portfolio-intel`
+2. ✅ Starts backend server (http://localhost:8000)
+3. ✅ Starts frontend server (http://localhost:3000)
+
+### Stop Everything
+
+```bash
+./stop.sh
+```
+
+## 📖 Documentation
+
+- **[START_HERE.md](START_HERE.md)** - Quick start guide
+- **[frontend/README.md](frontend/README.md)** - Frontend documentation
+- **[frontend/QUICKSTART.md](frontend/QUICKSTART.md)** - Frontend 5-min setup
+- **[backend/TEST_RESULTS.md](backend/TEST_RESULTS.md)** - Backend API tests
+- **[FRONTEND_CHECKLIST.md](FRONTEND_CHECKLIST.md)** - Feature checklist
+
+## 🌟 Features
+
+### Frontend (React + Tailwind CSS)
+- ✅ Modern UI with dark/light theme
+- ✅ Real-time agent activity visualization
+- ✅ Interactive portfolio dashboards
+- ✅ Data visualization with charts
+- ✅ Session management with history
+- ✅ Responsive design (mobile, tablet, desktop)
+- ✅ Keyboard shortcuts and accessibility
+
+### Backend (FastAPI + Multi-Agent AI)
+- ✅ Natural language query processing
+- ✅ Multi-agent collaboration (Planner, Portfolio, Market, SEC, Validator)
+- ✅ Real-time market data integration
+- ✅ SEC filings integration
+- ✅ Session and conversation management
+- ✅ Comprehensive error handling
+
+## 🎯 Access Points
+
+Once started:
+
+- **Frontend UI**: http://localhost:3000
+- **Backend API**: http://localhost:8000
+- **API Documentation**: http://localhost:8000/docs
+- **Health Check**: http://localhost:8000/health
 
 ## Overview
 
-This system enables clients to ask natural language questions about their investments and receive accurate, data-driven responses. Four specialized agents work together to analyze portfolio holdings, fetch real-time market data, and validate responses for accuracy.
+This system enables clients to ask natural language questions about their investments and receive accurate, data-driven responses through a beautiful web interface.
 
 ### Example Queries
 

@@ -47,7 +47,8 @@ Consider these guidelines:
 - Queries about "what stocks do I own" or "my holdings" → Need portfolio data, NO advice
 - Queries about "price of [stock]" or "how is [stock] doing" → Need market data, NO advice
 - Queries about "my [stock] holdings" or "[stock] in my portfolio" → Need BOTH portfolio and market data, NO advice
-- Queries about portfolio performance or gains/losses → Need BOTH, NO advice
+- Queries about portfolio performance, gains, losses, or returns → Need BOTH portfolio and market data, NO advice
+- Queries asking "highest return" or "best performer" → Need BOTH portfolio and market data, NO advice
 - Queries asking "how to improve" or "what should I do" → Need data + Wants advice
 
 IMPORTANT: Most queries just want information. Only set "Wants Recommendations" to YES if the user explicitly asks for advice or suggestions.
@@ -79,11 +80,16 @@ Wants Recommendations: [YES or NO]
         needs_portfolio = any(keyword in query_lower for keyword in portfolio_keywords)
 
         # Market indicators
-        market_keywords = ["price", "market", "news", "performance", "trading", "how is", "doing"]
+        market_keywords = ["price", "market", "news", "performance", "trading", "how is", "doing", "return", "gain", "loss", "profit"]
         needs_market = any(keyword in query_lower for keyword in market_keywords)
 
         # If query mentions a specific stock and portfolio, need both
         if "my" in query_lower and any(word in query_lower for word in ["stock", "holding"]):
+            needs_portfolio = True
+            needs_market = True
+        
+        # Queries about returns/performance need both portfolio and market data
+        if any(keyword in query_lower for keyword in ["return", "gain", "loss", "profit", "performance"]):
             needs_portfolio = True
             needs_market = True
 

@@ -39,15 +39,35 @@ def market_node(state: Dict) -> Dict:
 
     # If no portfolio data, try to extract ticker from query
     if not tickers:
-        # Simple ticker extraction (could be improved with regex)
-        words = query.upper().split()
+        # Enhanced ticker extraction with regex
+        import re
+        query_upper = query.upper()
+        
+        # Common stock tickers to look for
         common_tickers = [
-            "AAPL", "MSFT", "GOOGL", "AMZN", "TSLA", "META", "NVDA",
-            "SPY", "QQQ", "VTI", "BND", "VXUS"
+            "AAPL", "MSFT", "GOOGL", "GOOG", "AMZN", "TSLA", "META", "NVDA", "AMD",
+            "SPY", "QQQ", "VTI", "BND", "VXUS", "VYM", "VTEB", "VOO", "VEA",
+            "NFLX", "DIS", "INTC", "CSCO", "ADBE", "CRM", "ORCL", "IBM"
         ]
+        
+        # Method 1: Look for exact word matches (separated by spaces)
+        words = query_upper.split()
         for word in words:
-            if word in common_tickers:
-                tickers.append(word)
+            # Remove punctuation
+            clean_word = re.sub(r'[^\w]', '', word)
+            if clean_word in common_tickers:
+                tickers.append(clean_word)
+        
+        # Method 2: If no tickers found, try to find any uppercase words that match stock patterns
+        if not tickers:
+            # Find 2-5 letter uppercase words (common ticker pattern)
+            potential_tickers = re.findall(r'\b[A-Z]{2,5}\b', query.upper())
+            for ticker in potential_tickers:
+                if ticker in common_tickers:
+                    tickers.append(ticker)
+        
+        # Remove duplicates
+        tickers = list(set(tickers))
 
     # Fetch market data
     market_data = {}
@@ -110,13 +130,14 @@ def market_node(state: Dict) -> Dict:
         analysis_prompt = f"""You are a market analysis agent providing factual market information.
 
 # RESPONSE GUIDELINES:
-# - Report prices, performance, and news factually
-# - "What's the price?" → Report current price
-# - "How's it performing?" → Show performance numbers
-# - "What's the news?" → Summarize recent news
+# - Use the Market Data provided below - it contains current prices and information
+# - If market data is available for a ticker, report it directly
+# - "What's the price of AAPL?" → Look in Market Data section and report AAPL's current price
+# - "How's TSLA performing?" → Look in Market Data section and report TSLA's performance
+# - DO NOT say "I don't have data" if it's actually present in the Market Data section below
 # - DO NOT suggest what to buy or sell
 # - DO NOT give investment recommendations
-# - Just report the market data
+# - Just report the market data factually
 
 User Query: "{query}"
 
@@ -129,6 +150,8 @@ Market Data:
 
 Recent News:
 {news_text}
+
+IMPORTANT: Check the Market Data section above carefully. If there's price information for the requested stock, provide it. Don't say you don't have the data when it's listed above.
 """
 
         # If there's already a response from portfolio agent, build on it
@@ -149,8 +172,8 @@ Enhanced Response:"""
             analysis_prompt += """
 
 Based on the market data and news above, provide a factual answer to the user's query.
-Be specific and reference actual prices and performance metrics.
-DO NOT suggest what to buy or sell.
+Be specific and reference actual prices and performance metrics from the Market Data section.
+If the stock's data is shown above, report it. DO NOT say you don't have the data.
 
 Response:"""
 

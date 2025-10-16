@@ -2,6 +2,8 @@
 Portfolio agent node for analyzing client portfolio data.
 """
 
+import os
+from pathlib import Path
 from typing import Dict
 from src.llm.client import get_llm
 from src.tools.portfolio_tools import (
@@ -25,8 +27,12 @@ def portfolio_node(state: Dict) -> Dict:
     client_id = state.get("client_id", "")
     wants_recommendations = state.get("wants_recommendations", False)
 
+    # Get path to portfolios.xlsx (in project root)
+    project_root = Path(__file__).parent.parent.parent
+    portfolio_file = project_root / "portfolios.xlsx"
+    
     # Load portfolio data
-    portfolio_data = load_portfolio_data("portfolios.xlsx", client_id)
+    portfolio_data = load_portfolio_data(str(portfolio_file), client_id)
 
     # Format portfolio for LLM
     portfolio_text = format_portfolio_for_llm(portfolio_data)
