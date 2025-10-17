@@ -31,3 +31,8 @@ fastapi==0.109.0
 uvicorn[standard]==0.27.0
 pydantic>=2.7.4  # Updated to be compatible with langgraph
 pydantic-settings>=2.4.0  # Updated to be compatible with langchain-community
+
+# AutoGen AgentChat dependencies (6-agent trading system)
+autogen-agentchat>=0.2.0
+autogen-core>=0.2.0
+autogen-ext>=0.2.0
