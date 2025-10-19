@@ -3,13 +3,23 @@ FastAPI application for LangGraph Portfolio Intelligence API.
 """
 
 import logging
+import sys
+from pathlib import Path
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 import time
 
+# Add project root to Python path BEFORE importing any routes
+# Path: backends/langgraph_backend/app/main.py
+# Go up: app -> langgraph_backend -> backends -> PROJECT_ROOT (3 levels)
+project_root = Path(__file__).parent.parent.parent.parent
+if str(project_root) not in sys.path:
+    sys.path.insert(0, str(project_root))
+    print(f"Added project root to sys.path: {project_root}")
+
 from app.config import settings, validate_settings
-from app.api.routes import query, portfolio, health
+from app.api.routes import query, portfolio, health, stock_analysis
 from app.middleware.error_handler import setup_exception_handlers
 from app.middleware.logging_middleware import LoggingMiddleware
 
@@ -48,6 +58,7 @@ setup_exception_handlers(app)
 app.include_router(health.router, prefix="/api", tags=["Health"])
 app.include_router(query.router, prefix="/api", tags=["Query"])
 app.include_router(portfolio.router, prefix="/api", tags=["Portfolio"])
+app.include_router(stock_analysis.router, prefix="/api", tags=["Stock Analysis"])
 
 
 @app.on_event("startup")

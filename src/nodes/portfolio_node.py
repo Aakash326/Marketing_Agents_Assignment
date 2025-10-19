@@ -40,17 +40,68 @@ def portfolio_node(state: Dict) -> Dict:
     # Create analysis prompt based on whether user wants recommendations
     if not wants_recommendations:
         # INFORMATION MODE: Just answer the question factually
-        analysis_prompt = f"""You are a portfolio analysis agent. The user is asking: "{query}"
 
-Below is their complete portfolio data. Answer their question using ONLY this information.
+        # Check if this is a risk/diversification query
+        query_lower = query.lower()
+        is_risk_query = any(keyword in query_lower for keyword in
+                           ["risk", "risky", "diversif", "allocation", "sector", "concentration"])
+
+        if is_risk_query:
+            # RISK ANALYSIS MODE
+            analysis_prompt = f"""You are a portfolio risk analysis agent.
+
+USER'S QUESTION: "{query}"
 
 {portfolio_text}
 
-Instructions:
-1. If they ask "what stocks do I own" or similar - list ALL the holdings shown above
-2. Do NOT try to search for additional data
-3. Do NOT mention ticker symbols from their question (like "DO" or "OWN") - these are just English words
-4. Simply answer based on the portfolio data provided above
+CRITICAL INSTRUCTIONS - RISK PROFILE ANALYSIS:
+You MUST analyze the risk profile and diversification of this portfolio. DO NOT just report the total value.
+
+Perform the following analysis:
+
+1. ASSET CLASS DISTRIBUTION:
+   - Count how many holdings are in each asset class (Stocks, Bonds, ETFs, etc.)
+   - Calculate percentage of portfolio in each asset class
+   - Example: "60% Stocks, 30% Bonds, 10% ETFs"
+
+2. SECTOR ALLOCATION:
+   - List all sectors represented (Technology, Healthcare, Consumer, Financial, etc.)
+   - Count holdings per sector
+   - Identify dominant sectors
+   - Example: "40% Technology, 25% Healthcare, 20% Consumer, 15% Financial"
+
+3. CONCENTRATION RISK:
+   - Are holdings too concentrated in one sector or asset class?
+   - Is there over-reliance on a few positions?
+   - Are holdings well-spread across different sectors?
+
+4. RISK ASSESSMENT:
+   - Overall risk level: Low, Moderate, or High
+   - Diversification quality: Well-diversified, Moderately diversified, or Concentrated
+   - Key risks identified
+
+Provide a comprehensive risk profile analysis based on the portfolio data above.
+
+Your response:"""
+        else:
+            # GENERAL INFORMATION MODE
+            analysis_prompt = f"""You are a portfolio analysis agent.
+
+USER'S QUESTION: "{query}"
+
+IMPORTANT CONTEXT UNDERSTANDING:
+- If the user asks about "total value", "portfolio value", "total worth" - they are asking for the SUM of all holding values
+- Words like "TOTAL", "VALUE", "HOLD", "OWN", "DO" in questions are ENGLISH WORDS, NOT stock ticker symbols
+- The portfolio data below ALREADY includes "Total Portfolio Value" calculated for you
+- Simply read and report the total value from the data provided
+
+{portfolio_text}
+
+INSTRUCTIONS:
+1. The data above already shows "Total Portfolio Value" - use that number
+2. If they ask "what stocks do I own" - list the holdings
+3. If they ask about "total value" or similar - report the "Total Portfolio Value" shown above
+4. Do NOT search for ticker symbols like "TOTAL", "VALUE", "HOLD", "OWN" - these are English words
 5. Be factual and direct
 
 Your response:"""

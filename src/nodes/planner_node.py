@@ -39,17 +39,26 @@ Client ID: {client_id}
 {history_context}
 
 Analyze this query and determine:
-1. Does this query require portfolio data analysis? (Information about client's holdings, stocks they own, etc.)
-2. Does this query require market data analysis? (Stock prices, news, market performance, etc.)
+1. Does this query require portfolio data analysis? (Information about client's holdings, stocks they own, portfolio value, etc.)
+2. Does this query require market data analysis? (Real-time stock prices, news, market performance, current valuations, etc.)
 3. Is the user asking for investment advice/recommendations? (YES only if query explicitly contains: "how to improve", "what should I do", "recommendations", "suggestions", "advice", "how can I", "should I buy", "should I sell")
 
 Consider these guidelines:
-- Queries about "what stocks do I own" or "my holdings" → Need portfolio data, NO advice
-- Queries about "price of [stock]" or "how is [stock] doing" → Need market data, NO advice
-- Queries about "my [stock] holdings" or "[stock] in my portfolio" → Need BOTH portfolio and market data, NO advice
-- Queries about portfolio performance, gains, losses, or returns → Need BOTH portfolio and market data, NO advice
-- Queries asking "highest return" or "best performer" → Need BOTH portfolio and market data, NO advice
-- Queries asking "how to improve" or "what should I do" → Need data + Wants advice
+- Queries about "what stocks do I own", "my holdings", "what do I have" → Portfolio data ONLY, NO advice
+- Queries about "total value", "portfolio value", "total worth", "how much", "value I hold" → Portfolio data ONLY, NO advice
+- Queries about "risk profile", "how risky", "diversified", "diversity", "allocation" → Portfolio data ONLY, NO advice
+- Queries about "price of [stock]" or "how is [stock] doing" → Market data ONLY, NO advice
+- Queries about "my [stock] holdings" or "[stock] in my portfolio" → BOTH portfolio and market data, NO advice
+- Queries about portfolio performance, gains, losses, or returns → BOTH portfolio and market data, NO advice
+- Queries asking "highest return", "best performer", "worst performer" → BOTH portfolio and market data, NO advice
+- Queries asking "how to improve", "what should I do", "optimize", "rebalance" → Data + Wants advice
+
+IMPORTANT CONTEXT UNDERSTANDING:
+- "total value" means total portfolio value (sum of all holdings)
+- "value I hold" means total portfolio value
+- "how much do I have" means total portfolio value
+- Ignore common English words like "DO", "OWN", "HOLD", "TOTAL" as ticker symbols - these refer to portfolio questions
+- If query mentions "my" or "I" - it's about the CLIENT'S portfolio, not searching for stocks
 
 IMPORTANT: Most queries just want information. Only set "Wants Recommendations" to YES if the user explicitly asks for advice or suggestions.
 
@@ -76,7 +85,11 @@ Wants Recommendations: [YES or NO]
         query_lower = query.lower()
 
         # Portfolio indicators
-        portfolio_keywords = ["own", "holdings", "my stocks", "my portfolio", "what stocks"]
+        portfolio_keywords = ["own", "holdings", "my stocks", "my portfolio", "what stocks",
+                            "total value", "portfolio value", "total worth", "how much",
+                            "value i hold", "my total", "what do i have",
+                            "risk profile", "how risky", "diversified", "diversity",
+                            "allocation", "sector allocation"]
         needs_portfolio = any(keyword in query_lower for keyword in portfolio_keywords)
 
         # Market indicators
@@ -87,7 +100,7 @@ Wants Recommendations: [YES or NO]
         if "my" in query_lower and any(word in query_lower for word in ["stock", "holding"]):
             needs_portfolio = True
             needs_market = True
-        
+
         # Queries about returns/performance need both portfolio and market data
         if any(keyword in query_lower for keyword in ["return", "gain", "loss", "profit", "performance"]):
             needs_portfolio = True

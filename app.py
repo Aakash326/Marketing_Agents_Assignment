@@ -1,9 +1,13 @@
 """
 Streamlit UI for Portfolio & Market Intelligence System.
-Enhanced with session management and clarification features.
+Enhanced with session management, clarification features, and portfolio analytics.
 """
 
 import streamlit as st
+import pandas as pd
+import plotly.express as px
+import plotly.graph_objects as go
+from datetime import datetime
 from src.graph.workflow import run_workflow
 
 
@@ -237,6 +241,169 @@ if submit_button and query:
 
 elif submit_button:
     st.warning("Please enter a query.")
+
+# Portfolio Analytics Dashboard
+st.markdown("---")
+st.header("📈 Portfolio Analytics Dashboard")
+
+@st.cache_data
+def load_portfolio_data():
+    """Load portfolio data from Excel file"""
+    try:
+        df = pd.read_excel('portfolios.xlsx')
+        return df
+    except Exception as e:
+        st.error(f"Error loading portfolio data: {str(e)}")
+        return None
+
+# Load data
+portfolio_df = load_portfolio_data()
+
+if portfolio_df is not None and selected_client:
+    # Filter data for selected client
+    client_data = portfolio_df[portfolio_df['client_id'] == selected_client].copy()
+
+    if len(client_data) > 0:
+        # Calculate portfolio metrics
+        client_data['market_value'] = client_data['quantity'] * client_data['Purchase Price']
+        total_value = client_data['market_value'].sum()
+        num_holdings = len(client_data)
+
+        # Display summary metrics
+        col1, col2, col3, col4 = st.columns(4)
+
+        with col1:
+            st.metric(
+                label="Total Portfolio Value",
+                value=f"${total_value:,.2f}"
+            )
+
+        with col2:
+            st.metric(
+                label="Number of Holdings",
+                value=num_holdings
+            )
+
+        with col3:
+            unique_sectors = client_data['sector'].nunique()
+            st.metric(
+                label="Sectors",
+                value=unique_sectors
+            )
+
+        with col4:
+            unique_asset_classes = client_data['asset_class'].nunique()
+            st.metric(
+                label="Asset Classes",
+                value=unique_asset_classes
+            )
+
+        st.markdown("---")
+
+        # Create visualizations
+        viz_col1, viz_col2 = st.columns(2)
+
+        with viz_col1:
+            # Asset Class Allocation Pie Chart
+            st.subheader("Asset Class Allocation")
+            asset_allocation = client_data.groupby('asset_class')['market_value'].sum().reset_index()
+            asset_allocation['percentage'] = (asset_allocation['market_value'] / total_value * 100).round(2)
+
+            fig_asset = px.pie(
+                asset_allocation,
+                values='market_value',
+                names='asset_class',
+                title=f'Portfolio Composition by Asset Class',
+                hole=0.4,
+                color_discrete_sequence=px.colors.sequential.Blues_r
+            )
+            fig_asset.update_traces(
+                textposition='inside',
+                textinfo='percent+label',
+                hovertemplate='<b>%{label}</b><br>Value: $%{value:,.2f}<br>Percentage: %{percent}<extra></extra>'
+            )
+            st.plotly_chart(fig_asset, use_container_width=True)
+
+        with viz_col2:
+            # Sector Allocation Pie Chart
+            st.subheader("Sector Allocation")
+            sector_allocation = client_data.groupby('sector')['market_value'].sum().reset_index()
+            sector_allocation['percentage'] = (sector_allocation['market_value'] / total_value * 100).round(2)
+
+            fig_sector = px.pie(
+                sector_allocation,
+                values='market_value',
+                names='sector',
+                title=f'Portfolio Composition by Sector',
+                hole=0.4,
+                color_discrete_sequence=px.colors.sequential.Purples_r
+            )
+            fig_sector.update_traces(
+                textposition='inside',
+                textinfo='percent+label',
+                hovertemplate='<b>%{label}</b><br>Value: $%{value:,.2f}<br>Percentage: %{percent}<extra></extra>'
+            )
+            st.plotly_chart(fig_sector, use_container_width=True)
+
+        # Holdings Breakdown Bar Chart
+        st.subheader("Holdings Breakdown")
+        holdings_sorted = client_data.sort_values('market_value', ascending=False)
+
+        fig_holdings = go.Figure()
+        fig_holdings.add_trace(go.Bar(
+            x=holdings_sorted['symbol'],
+            y=holdings_sorted['market_value'],
+            text=holdings_sorted['market_value'].apply(lambda x: f'${x:,.0f}'),
+            textposition='outside',
+            marker=dict(
+                color=holdings_sorted['market_value'],
+                colorscale='Viridis',
+                showscale=True,
+                colorbar=dict(title="Value ($)")
+            ),
+            hovertemplate='<b>%{x}</b><br>Market Value: $%{y:,.2f}<br>Shares: %{customdata[0]}<br>Price: $%{customdata[1]:.2f}<extra></extra>',
+            customdata=holdings_sorted[['quantity', 'Purchase Price']].values
+        ))
+
+        fig_holdings.update_layout(
+            title=f'Holdings Value Distribution - {selected_client}',
+            xaxis_title='Stock Symbol',
+            yaxis_title='Market Value ($)',
+            showlegend=False,
+            height=500,
+            hovermode='x'
+        )
+
+        st.plotly_chart(fig_holdings, use_container_width=True)
+
+        # Detailed Holdings Table
+        st.subheader("Detailed Holdings")
+
+        # Prepare display dataframe
+        display_df = client_data[['symbol', 'security_name', 'asset_class', 'sector', 'quantity', 'Purchase Price', 'market_value', 'purchase_date']].copy()
+        display_df['percentage'] = (display_df['market_value'] / total_value * 100).round(2)
+        display_df = display_df.sort_values('market_value', ascending=False)
+
+        # Format columns
+        display_df['Purchase Price'] = display_df['Purchase Price'].apply(lambda x: f'${x:.2f}')
+        display_df['market_value'] = display_df['market_value'].apply(lambda x: f'${x:,.2f}')
+        display_df['percentage'] = display_df['percentage'].apply(lambda x: f'{x}%')
+        display_df['purchase_date'] = pd.to_datetime(display_df['purchase_date']).dt.strftime('%Y-%m-%d')
+
+        # Rename columns for display
+        display_df.columns = ['Symbol', 'Security Name', 'Asset Class', 'Sector', 'Shares', 'Purchase Price', 'Market Value', 'Purchase Date', 'Portfolio %']
+
+        st.dataframe(
+            display_df,
+            use_container_width=True,
+            hide_index=True
+        )
+
+    else:
+        st.info(f"No portfolio data found for {selected_client}")
+else:
+    if portfolio_df is None:
+        st.warning("Unable to load portfolio data. Please ensure portfolios.xlsx exists.")
 
 # Footer
 st.markdown("---")

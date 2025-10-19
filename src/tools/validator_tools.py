@@ -273,7 +273,7 @@ def enhanced_fact_check(
     common_words = {
         # Common 2-letter words
         "AM", "AN", "AS", "AT", "BE", "BY", "DO", "GO", "HE", "IF", "IN", "IS", "IT",
-        "ME", "MY", "NO", "OF", "ON", "OR", "SO", "TO", "UP", "US", "WE",
+        "ME", "MY", "NO", "OF", "ON", "OR", "SO", "TO", "UP", "US", "WE", "YA",
         # Common 3-letter words
         "THE", "AND", "FOR", "ARE", "BUT", "NOT", "YOU", "ALL", "CAN", "HAD", "HER",
         "WAS", "ONE", "OUR", "OUT", "DAY", "GET", "HAS", "HIM", "HIS", "HOW", "ITS",
@@ -311,7 +311,10 @@ def enhanced_fact_check(
         # Financial terms that aren't tickers
         "ETF", "ETFS", "FUND", "FUNDS", "STOCK", "STOCKS", "BOND", "BONDS", "PRICE",
         "PRICES", "SHARE", "SHARES", "ASSET", "ASSETS", "MARKET", "CASH", "OWNS", "HOLDINGS",
-        "RETURN", "RETURNS", "GAIN", "GAINS", "LOSS", "LOSSES", "VALUE"
+        "RETURN", "RETURNS", "GAIN", "GAINS", "LOSS", "LOSSES", "VALUE", "VALUES",
+        "TOTAL", "HOLD", "HOLDING", "WORTH", "PORTFOLIO", "PORTFOLIOS",
+        "RISK", "RISKS", "PROFILE", "DIVERSITY", "DIVERSIFIED", "ALLOCATION",
+        "CLT", "CLASS"
     }
     unknown_tickers = mentioned_tickers - known_tickers - common_words
 
@@ -390,7 +393,7 @@ def check_data_sufficiency(
     common_words = {
         # Common 2-letter words
         "AM", "AN", "AS", "AT", "BE", "BY", "DO", "GO", "HE", "IF", "IN", "IS", "IT",
-        "ME", "MY", "NO", "OF", "ON", "OR", "SO", "TO", "UP", "US", "WE",
+        "ME", "MY", "NO", "OF", "ON", "OR", "SO", "TO", "UP", "US", "WE", "YA",
         # Common 3-letter words
         "THE", "AND", "FOR", "ARE", "BUT", "NOT", "YOU", "ALL", "CAN", "HAD", "HER",
         "WAS", "ONE", "OUR", "OUT", "DAY", "GET", "HAS", "HIM", "HIS", "HOW", "ITS",
@@ -428,7 +431,10 @@ def check_data_sufficiency(
         # Financial terms that aren't tickers
         "ETF", "ETFS", "FUND", "FUNDS", "STOCK", "STOCKS", "BOND", "BONDS", "PRICE",
         "PRICES", "SHARE", "SHARES", "ASSET", "ASSETS", "MARKET", "CASH", "OWNS", "HOLDINGS",
-        "RETURN", "RETURNS", "GAIN", "GAINS", "LOSS", "LOSSES", "VALUE"
+        "RETURN", "RETURNS", "GAIN", "GAINS", "LOSS", "LOSSES", "VALUE", "VALUES",
+        "TOTAL", "HOLD", "HOLDING", "WORTH", "PORTFOLIO", "PORTFOLIOS",
+        "RISK", "RISKS", "PROFILE", "DIVERSITY", "DIVERSIFIED", "ALLOCATION",
+        "CLT", "CLASS"
     }
 
     if mentioned_tickers:

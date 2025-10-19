@@ -159,15 +159,25 @@ def format_portfolio_for_llm(portfolio_data: Dict) -> str:
     if not portfolio_data.get("holdings"):
         return "No holdings found in portfolio."
 
+    # Calculate total portfolio value based on purchase prices
+    total_value = 0.0
+    for holding in portfolio_data["holdings"]:
+        holding_value = holding['quantity'] * holding['purchase_price']
+        total_value += holding_value
+
     output = f"Portfolio for {portfolio_data['client_id']}:\n\n"
-    output += f"Total Holdings: {portfolio_data['total_holdings']}\n\n"
+    output += f"Total Holdings: {portfolio_data['total_holdings']}\n"
+    output += f"Total Portfolio Value (at purchase prices): ${total_value:,.2f}\n\n"
+    output += "Holdings Breakdown:\n"
 
     for i, holding in enumerate(portfolio_data["holdings"], 1):
+        holding_value = holding['quantity'] * holding['purchase_price']
         output += f"{i}. {holding['security_name']} ({holding['symbol']})\n"
         output += f"   - Asset Class: {holding['asset_class']}\n"
         output += f"   - Sector: {holding['sector']}\n"
         output += f"   - Quantity: {holding['quantity']}\n"
         output += f"   - Purchase Price: ${holding['purchase_price']:.2f}\n"
-        output += f"   - Purchase Date: {holding['purchase_date']}\n\n"
+        output += f"   - Purchase Date: {holding['purchase_date']}\n"
+        output += f"   - Holding Value: ${holding_value:,.2f}\n\n"
 
     return output
