@@ -4,10 +4,11 @@ Portfolio management endpoints.
 
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 import logging
 import pandas as pd
 import os
+from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
@@ -193,3 +194,130 @@ async def get_portfolio(client_id: str) -> Portfolio:
         total_value=round(total_value, 2),
         holdings=holdings
     )
+
+
+@router.get("/portfolio/{client_id}/summary")
+async def get_portfolio_summary(client_id: str) -> Dict[str, Any]:
+    """
+    Returns portfolio summary for dashboard:
+    - Total holdings count
+    - Total portfolio value
+    - Asset allocation breakdown
+    - Top performing holdings
+    - Sector distribution
+    """
+    logger.info(f"Getting portfolio summary for client: {client_id}")
+
+    try:
+        # Load portfolio data
+        portfolio = load_portfolio_from_excel(client_id)
+
+        if not portfolio:
+            raise HTTPException(status_code=404, detail=f"Portfolio not found for client {client_id}")
+
+        # Calculate metrics
+        total_holdings = len(portfolio.holdings)
+
+        # Asset allocation
+        asset_allocation = {}
+        for holding in portfolio.holdings:
+            asset_class = holding.asset_class or "Unknown"
+            if asset_class in asset_allocation:
+                asset_allocation[asset_class] += holding.market_value
+            else:
+                asset_allocation[asset_class] = holding.market_value
+
+        allocation_data = [
+            {"name": asset, "value": round(value, 2)}
+            for asset, value in asset_allocation.items()
+        ]
+
+        # Sector distribution
+        sector_dist = {}
+        for holding in portfolio.holdings:
+            sector = holding.sector or "Unknown"
+            if sector in sector_dist:
+                sector_dist[sector] += holding.market_value
+            else:
+                sector_dist[sector] = holding.market_value
+
+        sector_data = [
+            {"name": sector, "value": round(value, 2)}
+            for sector, value in sector_dist.items()
+        ]
+
+        # Top holdings by market value
+        sorted_holdings = sorted(portfolio.holdings, key=lambda x: x.market_value, reverse=True)
+        top_holdings = [
+            {
+                "symbol": h.symbol,
+                "security_name": h.security_name,
+                "quantity": h.quantity,
+                "market_value": h.market_value
+            }
+            for h in sorted_holdings[:5]
+        ]
+
+        return {
+            "client_id": client_id,
+            "total_holdings": total_holdings,
+            "total_value": portfolio.total_value,
+            "asset_allocation": allocation_data,
+            "sector_distribution": sector_data,
+            "top_holdings": top_holdings,
+            "last_updated": datetime.now().isoformat()
+        }
+
+    except Exception as e:
+        logger.error(f"Error getting portfolio summary: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/portfolio/{client_id}/query-suggestions")
+async def get_query_suggestions(client_id: str) -> Dict[str, List[str]]:
+    """
+    Returns contextual query suggestions based on client's portfolio
+    """
+    logger.info(f"Getting query suggestions for client: {client_id}")
+
+    try:
+        portfolio = load_portfolio_from_excel(client_id)
+
+        if not portfolio:
+            raise HTTPException(status_code=404, detail=f"Portfolio not found for client {client_id}")
+
+        # Get unique symbols for personalized suggestions
+        symbols = [h.symbol for h in sorted(portfolio.holdings, key=lambda x: x.market_value, reverse=True)[:3]]
+
+        suggestions = {
+            "portfolio": [
+                "Show me my complete portfolio",
+                "What's my total portfolio value?",
+                "Which stocks do I own the most of?",
+                "What's my asset allocation?"
+            ],
+            "performance": [
+                "Which of my holdings performed best?",
+                f"How is {symbols[0]} doing in my portfolio?" if symbols else "How are my holdings performing?",
+                "What are my top gainers?",
+                "Show me my portfolio returns"
+            ],
+            "market": [
+                f"What's the current price of {symbols[0]}?" if symbols else "Get current stock prices",
+                f"Get latest news on {symbols[1]}" if len(symbols) > 1 else "What's the latest market news?",
+                "How are tech stocks performing today?",
+                "What are the market trends?"
+            ],
+            "analysis": [
+                "Analyze my portfolio risk",
+                "What sectors am I exposed to?",
+                "Should I rebalance my portfolio?",
+                "Compare my holdings to market benchmarks"
+            ]
+        }
+
+        return suggestions
+
+    except Exception as e:
+        logger.error(f"Error getting query suggestions: {e}")
+        raise HTTPException(status_code=500, detail=str(e))

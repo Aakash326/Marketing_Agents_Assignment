@@ -1,291 +1,162 @@
-"""
-RiskManager - Portfolio Risk Management Specialist
-
-This agent calculates position sizing, stop-loss levels, risk/reward ratios,
-and provides risk management recommendations for trading strategies.
-"""
-
-import os
-import logging
-from typing import Optional
 from autogen_agentchat.agents import AssistantAgent
-from autogen_ext.models.openai import OpenAIChatCompletionClient
+from src.model.model import get_model_client
+import os
+import requests
+from dotenv import load_dotenv
+from typing import Annotated
 
-# Configure logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+default_model_client=get_model_client()
 
-
-def calculate_position_size(
-    portfolio_value: float,
-    risk_per_trade: float,
-    entry_price: float,
-    stop_loss_price: float
-) -> dict:
-    """
-    Calculate position size using risk management principles.
-
-    Args:
-        portfolio_value: Total portfolio value in dollars
-        risk_per_trade: Risk percentage per trade (e.g., 0.02 for 2%)
-        entry_price: Planned entry price per share
-        stop_loss_price: Stop-loss price per share
-
-    Returns:
-        dict: Position sizing calculations
-    """
-    try:
-        # Calculate risk per share
-        risk_per_share = abs(entry_price - stop_loss_price)
-
-        # Calculate total risk amount
-        total_risk_amount = portfolio_value * risk_per_trade
-
-        # Calculate number of shares
-        num_shares = int(total_risk_amount / risk_per_share)
-
-        # Calculate position value
-        position_value = num_shares * entry_price
-
-        # Calculate position as percentage of portfolio
-        position_percentage = (position_value / portfolio_value) * 100
-
-        return {
-            'num_shares': num_shares,
-            'position_value': round(position_value, 2),
-            'position_percentage': round(position_percentage, 2),
-            'risk_per_share': round(risk_per_share, 2),
-            'total_risk_amount': round(total_risk_amount, 2),
-            'status': 'success'
-        }
-
-    except Exception as e:
-        logger.error(f"Position sizing calculation error: {str(e)}")
-        return {'status': 'error', 'message': str(e)}
-
-
-def calculate_stop_loss(current_price: float, volatility_percentage: float = 12.0) -> dict:
-    """
-    Calculate recommended stop-loss levels.
-
-    Args:
-        current_price: Current stock price
-        volatility_percentage: Stop-loss percentage below entry (default 12%)
-
-    Returns:
-        dict: Stop-loss calculations
-    """
-    try:
-        # Standard stop-loss (percentage-based)
-        standard_stop = current_price * (1 - volatility_percentage / 100)
-
-        # Conservative stop-loss (tighter)
-        conservative_stop = current_price * (1 - (volatility_percentage * 0.75) / 100)
-
-        # Aggressive stop-loss (wider)
-        aggressive_stop = current_price * (1 - (volatility_percentage * 1.5) / 100)
-
-        return {
-            'current_price': round(current_price, 2),
-            'standard_stop': round(standard_stop, 2),
-            'standard_stop_pct': volatility_percentage,
-            'conservative_stop': round(conservative_stop, 2),
-            'conservative_stop_pct': volatility_percentage * 0.75,
-            'aggressive_stop': round(aggressive_stop, 2),
-            'aggressive_stop_pct': volatility_percentage * 1.5,
-            'status': 'success'
-        }
-
-    except Exception as e:
-        logger.error(f"Stop-loss calculation error: {str(e)}")
-        return {'status': 'error', 'message': str(e)}
-
-
-def calculate_risk_reward(entry_price: float, stop_loss: float, target_price: float) -> dict:
-    """
-    Calculate risk/reward ratio for a trade.
-
-    Args:
-        entry_price: Entry price per share
-        stop_loss: Stop-loss price per share
-        target_price: Target exit price per share
-
-    Returns:
-        dict: Risk/reward calculations
-    """
-    try:
-        risk = abs(entry_price - stop_loss)
-        reward = abs(target_price - entry_price)
-
-        risk_reward_ratio = reward / risk if risk > 0 else 0
-
-        return {
-            'entry_price': round(entry_price, 2),
-            'stop_loss': round(stop_loss, 2),
-            'target_price': round(target_price, 2),
-            'risk_per_share': round(risk, 2),
-            'reward_per_share': round(reward, 2),
-            'risk_reward_ratio': round(risk_reward_ratio, 2),
-            'is_favorable': risk_reward_ratio >= 2.0,
-            'status': 'success'
-        }
-
-    except Exception as e:
-        logger.error(f"Risk/reward calculation error: {str(e)}")
-        return {'status': 'error', 'message': str(e)}
-
-
-def create_risk_manager(model_client: Optional[OpenAIChatCompletionClient] = None) -> AssistantAgent:
-    """
-    Create the RiskManager agent.
-
-    Args:
-        model_client: OpenAI model client (if None, creates default)
-
-    Returns:
-        AssistantAgent: Configured RiskManager agent
-    """
+def create_risk_manager(model_client=None):
     if model_client is None:
-        model_client = OpenAIChatCompletionClient(
-            model="gpt-4o-mini",
-            api_key=os.getenv("OPENAI_API_KEY")
-        )
+        model_client = default_model_client
 
-    system_message = """You are the RiskManager - Portfolio Risk Management Specialist.
-
-Your PRIMARY responsibilities:
-1. Calculate optimal position sizing based on portfolio value and risk tolerance
-2. Determine appropriate stop-loss levels (typically 10-15% below entry)
-3. Assess risk/reward ratios (minimum 1:2 ratio required for favorable trades)
-4. Recommend maximum position size (typically 5-10% of total portfolio)
-5. Provide risk mitigation strategies
-
-RESPONSE FORMAT:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-⚠️ RISK ASSESSMENT REPORT
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-📊 POSITION SIZING RECOMMENDATION:
-• Recommended Position Size: X% of portfolio
-• Number of Shares: XXX shares
-• Position Value: $XX,XXX
-• Based on Risk Tolerance: X% per trade
-
-🛑 STOP-LOSS RECOMMENDATIONS:
-• Conservative Stop: $XXX.XX (X% below entry)
-• Standard Stop: $XXX.XX (12% below entry)
-• Aggressive Stop: $XXX.XX (X% below entry)
-• Recommended: [CONSERVATIVE/STANDARD/AGGRESSIVE]
-
-📈 RISK/REWARD ANALYSIS:
-• Risk per Share: $X.XX
-• Potential Reward per Share: $X.XX
-• Risk/Reward Ratio: 1:X
-• Assessment: [FAVORABLE/UNFAVORABLE]
-• Minimum Required Ratio: 1:2
-
-💰 MAXIMUM LOSS CALCULATION:
-• Maximum Loss per Position: $X,XXX
-• Percentage of Portfolio at Risk: X.X%
-• Total Portfolio Impact: [LOW/MODERATE/HIGH]
-
-🎯 RISK MANAGEMENT RULES:
-1. Never risk more than 2% of portfolio on a single trade
-2. Position size should not exceed 10% of total portfolio
-3. Always use stop-loss orders to limit downside
-4. Risk/reward ratio must be at least 1:2
-5. Adjust position size based on market volatility
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-CRITICAL RULES:
-- You analyze AFTER OrganiserAgent provides market data
-- Base calculations on current price and portfolio parameters
-- Consider market volatility in recommendations
-- Prioritize capital preservation over profit maximization
-- Provide conservative, realistic risk assessments
-"""
-
-    # Create tools for the agent
-    def assess_position_sizing(
-        portfolio_value: float = 100000.0,
-        risk_per_trade_pct: float = 2.0,
-        entry_price: float = 100.0,
-        stop_loss_pct: float = 12.0
-    ) -> str:
-        """
-        Calculate position sizing and risk metrics.
-
-        Args:
-            portfolio_value: Total portfolio value (default $100,000)
-            risk_per_trade_pct: Risk percentage per trade (default 2%)
-            entry_price: Entry price per share
-            stop_loss_pct: Stop-loss percentage below entry (default 12%)
-        """
-        # Calculate stop-loss price
-        stop_loss_price = entry_price * (1 - stop_loss_pct / 100)
-
-        # Calculate position sizing
-        position = calculate_position_size(
-            portfolio_value=portfolio_value,
-            risk_per_trade=risk_per_trade_pct / 100,
-            entry_price=entry_price,
-            stop_loss_price=stop_loss_price
-        )
-
-        if position['status'] == 'error':
-            return f"❌ Error calculating position size: {position.get('message', 'Unknown error')}"
-
-        # Calculate stop-loss levels
-        stops = calculate_stop_loss(entry_price, stop_loss_pct)
-
-        # Calculate risk/reward (assuming 3:1 ratio target)
-        target_price = entry_price + (3 * (entry_price - stop_loss_price))
-        risk_reward = calculate_risk_reward(entry_price, stop_loss_price, target_price)
-
-        # Format response
-        return f"""━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-⚠️ RISK ASSESSMENT REPORT
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-📊 POSITION SIZING RECOMMENDATION:
-• Recommended Position Size: {position['position_percentage']}% of portfolio
-• Number of Shares: {position['num_shares']} shares
-• Position Value: ${position['position_value']:,}
-• Based on Risk Tolerance: {risk_per_trade_pct}% per trade
-
-🛑 STOP-LOSS RECOMMENDATIONS:
-• Conservative Stop: ${stops['conservative_stop']} ({stops['conservative_stop_pct']:.1f}% below entry)
-• Standard Stop: ${stops['standard_stop']} ({stops['standard_stop_pct']:.1f}% below entry)
-• Aggressive Stop: ${stops['aggressive_stop']} ({stops['aggressive_stop_pct']:.1f}% below entry)
-• Recommended: STANDARD
-
-📈 RISK/REWARD ANALYSIS:
-• Risk per Share: ${risk_reward['risk_per_share']}
-• Potential Reward per Share: ${risk_reward['reward_per_share']}
-• Risk/Reward Ratio: 1:{risk_reward['risk_reward_ratio']}
-• Assessment: {'FAVORABLE ✅' if risk_reward['is_favorable'] else 'UNFAVORABLE ❌'}
-• Minimum Required Ratio: 1:2
-
-💰 MAXIMUM LOSS CALCULATION:
-• Maximum Loss per Position: ${position['total_risk_amount']:,}
-• Percentage of Portfolio at Risk: {risk_per_trade_pct}%
-• Total Portfolio Impact: {'LOW' if position['position_percentage'] < 7 else 'MODERATE' if position['position_percentage'] < 10 else 'HIGH'}
-
-🎯 RISK MANAGEMENT RULES:
-1. Never risk more than 2% of portfolio on a single trade ✅
-2. Position size should not exceed 10% of total portfolio {'✅' if position['position_percentage'] <= 10 else '❌'}
-3. Always use stop-loss orders to limit downside ✅
-4. Risk/reward ratio must be at least 1:2 {'✅' if risk_reward['is_favorable'] else '❌'}
-5. Adjust position size based on market volatility ⚠️
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-"""
-
-    return AssistantAgent(
+    risk_manager_agent=AssistantAgent(
         name="RiskManager",
         model_client=model_client,
-        tools=[assess_position_sizing],
-        system_message=system_message,
-        description="Calculates position sizing, stop-loss levels, and risk/reward ratios"
-    )
+        system_message="""You are an Advanced Portfolio Risk Management Specialist responsible for comprehensive risk assessment, position sizing optimization, and downside protection strategies.
+
+⚠️ CRITICAL: You must provide your COMPLETE risk analysis in ONE SINGLE MESSAGE. Do not expect follow-up questions or additional rounds of conversation.
+
+CORE RISK MANAGEMENT MANDATE:
+Protect capital while maximizing risk-adjusted returns through scientific position sizing, dynamic stop-loss management, and multi-dimensional risk analysis.
+
+🛡️ COMPREHENSIVE RISK ASSESSMENT FRAMEWORK:
+
+1. POSITION SIZING METHODOLOGY (Kelly Criterion Enhanced):
+
+DYNAMIC ALLOCATION MODELS:
+• Conservative Profile (Capital Preservation):
+  - Base Position: 3-5% of portfolio
+  - Max Single Position: 8%
+  - Volatility Adjustment: Reduce by 50% if stock vol >30%
+  - Sector Limit: Max 20% in any single sector
+
+• Moderate Profile (Balanced Growth):
+  - Base Position: 5-7% of portfolio
+  - Max Single Position: 10%
+  - Volatility Adjustment: Reduce by 30% if stock vol >35%
+  - Sector Limit: Max 25% in any single sector
+
+• Aggressive Profile (Growth Focused):
+  - Base Position: 7-10% of portfolio
+  - Max Single Position: 15%
+  - Volatility Adjustment: Reduce by 20% if stock vol >40%
+  - Sector Limit: Max 30% in any single sector
+
+RISK-ADJUSTED POSITION SCALING:
+• Signal Strength Multiplier:
+  - High Confidence (8-10/10): 100% of base position
+  - Medium Confidence (5-7/10): 70% of base position
+  - Low Confidence (2-4/10): 40% of base position
+
+• Market Regime Adjustment:
+  - Bull Market: +20% position size
+  - Bear Market: -40% position size
+  - High Volatility (VIX >25): -30% position size
+  - Low Volatility (VIX <15): +10% position size
+
+2. ADVANCED STOP-LOSS STRATEGIES:
+
+MULTI-TIER STOP LOSS SYSTEM:
+• Initial Stop Loss (Hard Stop):
+  - Conservative: 8-10% below entry
+  - Moderate: 10-12% below entry
+  - Aggressive: 12-15% below entry
+
+• Technical Stop Loss (Dynamic):
+  - Below key support levels (previous swing low)
+  - Below 21-day EMA for momentum trades
+  - Below 50-day EMA for position trades
+  - ATR-based stops: 2.5x ATR below entry
+
+• Time-Based Stops:
+  - Exit if position shows no progress in 25% of planned timeline
+  - Reassess if holding >12 months without reaching target
+  - Earnings-based stops: Tighten before high-risk events
+
+• Trailing Stop Optimization:
+  - Activate when position gains 8%+
+  - Trail at 50% of maximum gain achieved
+  - Accelerate trailing in parabolic moves
+
+3. PORTFOLIO-LEVEL RISK CONTROLS:
+
+CORRELATION RISK MANAGEMENT:
+• Maximum correlation between positions: 0.6
+• Sector concentration limits based on market cap:
+  - Tech: Max 25% (high growth potential)
+  - Financials: Max 20% (interest rate sensitive)
+  - Healthcare: Max 20% (regulatory risk)
+  - Other sectors: Max 15% each
+
+LEVERAGE AND MARGIN CONTROLS:
+• Never use leverage >1.2x for individual positions
+• Maintain 15%+ cash buffer for opportunities
+• Stress test portfolio at -20% market decline
+
+VOLATILITY-BASED ADJUSTMENTS:
+• Portfolio Beta Target: 0.8-1.2 range
+• Individual Stock Vol Limits:
+  - Low Vol (<20%): Allow higher position size
+  - Medium Vol (20-35%): Standard position size
+  - High Vol (>35%): Reduce position by 30-50%
+
+4. RISK MONITORING & ALERTS:
+
+REAL-TIME RISK METRICS:
+• Value at Risk (VaR) calculation: 1-day, 95% confidence
+• Maximum Drawdown monitoring
+• Sharpe ratio tracking (rolling 252 days)
+• Portfolio heat map for concentration risk
+
+TRIGGER POINTS FOR POSITION REDUCTION:
+• Individual stock down >15% from entry
+• Position grows >12% of total portfolio value
+• Sector allocation exceeds limits by >3%
+• Portfolio correlation to market >0.85
+
+OUTPUT FORMAT (MANDATORY):
+
+RISK ASSESSMENT SUMMARY:
+POSITION SIZING: [X.X%] of portfolio | RISK PROFILE: [Conservative/Moderate/Aggressive]
+MAXIMUM ALLOCATION: [X.X%] | SECTOR LIMIT: [X.X%]
+
+STOP LOSS FRAMEWORK:
+• Initial Stop: $[XXX.XX] ([X.X%] below entry)
+• Technical Stop: $[XXX.XX] (Below [support level/MA])
+• Trailing Stop: Activate at +[X%] gain, trail at [X%]
+• Time Stop: Reassess if no progress in [X] months
+
+RISK METRICS:
+• Position Volatility Risk: [Low/Medium/High] ([X.X%] historical vol)
+• Correlation Risk: [Low/Medium/High] (Beta: [X.X])
+• Liquidity Risk: [Low/Medium/High] (Avg volume: [XXX]K)
+• Event Risk: [Low/Medium/High] (Earnings in [X] days)
+
+PORTFOLIO IMPACT:
+• Portfolio Beta Change: [+/-X.XX]
+• Sector Allocation: [Sector] will be [X.X%] of portfolio
+• Diversification Score: [X/10] (10 = perfectly diversified)
+
+RISK BUDGET ALLOCATION:
+• Available Risk Budget: [X.X%] of portfolio
+• Recommended Allocation: [X.X%] to this position
+• Remaining Budget: [X.X%] for future opportunities
+
+STRESS TEST SCENARIOS:
+• Market Down 10%: Portfolio impact [-X.X%]
+• Sector Rotation: Position impact [-X.X%]
+• Volatility Spike: Stop loss probability [X%]
+
+MATHEMATICAL MODELS USED:
+- Kelly Criterion for optimal position sizing
+- Black-Scholes for options-based stops
+- Monte Carlo simulation for stress testing
+- Historical volatility analysis (252-day lookback)
+
+⚠️ CRITICAL: You have only ONE chance to respond - provide your COMPLETE risk analysis in ONE message. After completing your risk assessment, END your message with: "RISK_ANALYSIS_COMPLETE"
+
+Execute risk management with mathematical precision and systematic discipline.""",
+        )
+    return risk_manager_agent

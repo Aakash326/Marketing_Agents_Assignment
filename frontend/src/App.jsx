@@ -5,6 +5,7 @@ import ErrorBoundary from './components/ErrorBoundary';
 import Home from './pages/Home';
 import PortfolioIntelligence from './pages/PortfolioIntelligence';
 import StockAnalysis from './pages/StockAnalysis';
+import ChatPage from './pages/ChatPage';
 import './App.css';
 
 function Navigation() {
@@ -13,7 +14,8 @@ function Navigation() {
   const navItems = [
     { path: '/', label: 'Home', icon: '🏠' },
     { path: '/portfolio', label: 'Portfolio Intelligence', icon: '📊' },
-    { path: '/stock-analysis', label: 'Stock Analysis', icon: '📈' }
+    { path: '/stock-analysis', label: 'Stock Analysis', icon: '📈' },
+    { path: '/chat', label: 'Enhanced Chat', icon: '💬' }
   ];
 
   return (
@@ -88,6 +90,7 @@ function App() {
               <Route path="/" element={<Home />} />
               <Route path="/portfolio" element={<PortfolioIntelligence />} />
               <Route path="/stock-analysis" element={<StockAnalysis />} />
+              <Route path="/chat" element={<ChatPage />} />
             </Routes>
           </ErrorBoundary>
         </div>

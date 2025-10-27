@@ -41,31 +41,27 @@ async def analyze_stock(request: StockAnalysisRequest):
     """
     try:
         logger.info(f"Starting 6-agent analysis for {request.symbol}")
-        
+
         # Import the real AutoGen workflow
-        from src.workflows.trading_workflow import run_6agent_analysis
-        
+        from src.workflows.trading_workflow import run_fast_6agent_analysis
+
         logger.info(f"Successfully imported trading_workflow")
-        
+
         # Run the real 6-agent analysis
-        result = await run_6agent_analysis(
+        result = await run_fast_6agent_analysis(
             stock_symbol=request.symbol,
-            question=request.question or "Should I buy this stock?",
-            portfolio_value=request.portfolio_value,
-            risk_per_trade=request.risk_per_trade,
-            model_name="gpt-4o-mini",
-            max_turns=20
+            question=request.question or "Should I buy this stock?"
         )
         
-        # Convert to response format
+        # Convert to response format (result is a dict)
         return StockAnalysisResponse(
-            symbol=result.symbol,
-            recommendation=result.recommendation,
-            confidence=result.confidence,
-            summary=result.summary,
-            execution_plan=result.execution_plan,
-            agent_outputs=result.agent_outputs,
-            timestamp=result.timestamp
+            symbol=result.get('symbol', request.symbol),
+            recommendation=result.get('recommendation', 'HOLD'),
+            confidence=result.get('confidence', 50),
+            summary=result.get('summary', 'Analysis completed'),
+            execution_plan=result.get('execution_plan', {}),
+            agent_outputs=result.get('agent_outputs', {}),
+            timestamp=result.get('timestamp', '')
         )
         
     except Exception as e:

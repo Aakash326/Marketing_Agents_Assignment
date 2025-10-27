@@ -59,6 +59,58 @@ with st.sidebar:
 
     st.markdown("---")
 
+    # Portfolio Summary Widget
+    st.subheader("📊 Portfolio Summary")
+
+    @st.cache_data
+    def load_portfolio_summary(client_id):
+        """Load and calculate portfolio summary metrics"""
+        try:
+            df = pd.read_excel('portfolios.xlsx')
+            client_data = df[df['client_id'] == client_id].copy()
+
+            if len(client_data) == 0:
+                return None
+
+            # Calculate metrics
+            client_data['market_value'] = client_data['quantity'] * client_data['Purchase Price']
+            total_holdings = len(client_data)
+
+            # Top asset class
+            asset_allocation = client_data.groupby('asset_class')['market_value'].sum()
+            top_asset = asset_allocation.idxmax()
+            top_asset_pct = (asset_allocation.max() / client_data['market_value'].sum() * 100)
+
+            # Best performer (highest value holding)
+            best_performer = client_data.loc[client_data['market_value'].idxmax(), 'symbol']
+
+            # Diversity score (number of unique sectors)
+            diversity_score = client_data['sector'].nunique()
+
+            return {
+                'total_holdings': total_holdings,
+                'top_asset_class': f"{top_asset}: {top_asset_pct:.0f}%",
+                'best_performer': best_performer,
+                'diversity_score': diversity_score
+            }
+        except Exception as e:
+            return None
+
+    summary = load_portfolio_summary(selected_client)
+
+    if summary:
+        m_col1, m_col2 = st.columns(2)
+        with m_col1:
+            st.metric("Holdings", summary['total_holdings'])
+            st.metric("Best Performer", summary['best_performer'])
+        with m_col2:
+            st.metric("Top Asset", summary['top_asset_class'])
+            st.metric("Sectors", summary['diversity_score'])
+    else:
+        st.info("No portfolio data")
+
+    st.markdown("---")
+
     # System info
     st.subheader("About This System")
     st.markdown("""
@@ -117,25 +169,67 @@ if selected_client:
 
     # Show conversation history
     if len(st.session_state[history_key]) > 0:
-        with st.expander(f"📜 Conversation History ({len(st.session_state[history_key])//2} interactions)"):
+        with st.expander(f"💬 Conversation History ({len(st.session_state[history_key])//2} interactions)", expanded=False):
             history = st.session_state[history_key]
-            # Display in reverse (most recent first)
-            for i in range(len(history)-1, -1, -2):
-                if i-1 >= 0:
-                    user_msg = history[i-1]["content"]
-                    asst_msg = history[i]["content"]
-                    st.markdown(f"**You:** {user_msg[:200]}{'...' if len(user_msg) > 200 else ''}")
-                    st.markdown(f"**Assistant:** {asst_msg[:200]}{'...' if len(asst_msg) > 200 else ''}")
+            # Display in chronological order (oldest to newest)
+            for i in range(0, len(history), 2):
+                if i+1 < len(history):
+                    user_msg = history[i]
+                    asst_msg = history[i+1]
+
+                    # User message
+                    with st.chat_message("user", avatar="👤"):
+                        st.write(user_msg["content"])
+                        if "timestamp" in user_msg:
+                            st.caption(f"🕐 {user_msg['timestamp']}")
+
+                    # Assistant message
+                    with st.chat_message("assistant", avatar="🤖"):
+                        st.write(asst_msg["content"])
+                        if "timestamp" in asst_msg:
+                            st.caption(f"🕐 {asst_msg['timestamp']}")
+
                     st.markdown("---")
+
+    # Quick Actions
+    st.markdown("### 💡 Quick Actions")
+    q_col1, q_col2, q_col3, q_col4, q_col5 = st.columns(5)
+
+    with q_col1:
+        if st.button("📊 Portfolio", use_container_width=True):
+            st.session_state.prefilled_query = "Show my complete portfolio"
+
+    with q_col2:
+        if st.button("🏆 Top Holdings", use_container_width=True):
+            st.session_state.prefilled_query = "Which stocks performed best?"
+
+    with q_col3:
+        if st.button("💰 Total Value", use_container_width=True):
+            st.session_state.prefilled_query = "What's my total portfolio value?"
+
+    with q_col4:
+        if st.button("⚠️ Risk Analysis", use_container_width=True):
+            st.session_state.prefilled_query = "Analyze my portfolio risk"
+
+    with q_col5:
+        if st.button("📈 Market Data", use_container_width=True):
+            st.session_state.prefilled_query = "How are my tech stocks doing?"
+
+    st.markdown("---")
 
 col1, col2 = st.columns([3, 1])
 
 with col1:
     query = st.text_input(
         "Ask a question about your portfolio or the market:",
+        value=st.session_state.get('prefilled_query', ''),
         placeholder="e.g., What stocks do I own?",
         key="query_input"
     )
+
+    # Clear prefilled query after it's been used
+    if 'prefilled_query' in st.session_state and query:
+        del st.session_state['prefilled_query']
 
 with col2:
     st.write("")  # Spacing
@@ -143,101 +237,156 @@ with col2:
 
 # Process query
 if submit_button and query:
-    with st.spinner("Analyzing your query... 🤔"):
-        try:
-            # Get conversation history
-            conversation_history = st.session_state[history_key]
+    # Create progress indicators
+    progress_bar = st.progress(0)
+    status_text = st.empty()
 
-            # Run the workflow with history
-            result = run_workflow(query, selected_client, conversation_history)
+    try:
+        # Get conversation history
+        conversation_history = st.session_state[history_key]
 
-            # Check if clarification is needed (Feature 5)
-            if result.get("needs_clarification"):
-                st.warning("🤔 Clarification Needed")
-                st.info(result.get("clarification_message", "Please clarify your query."))
+        # Phase 1: Planning
+        status_text.info("🎯 Planner Agent: Analyzing query type...")
+        progress_bar.progress(20)
 
-                # Show clarification input
-                with st.form("clarification_form"):
-                    clarification = st.text_input(
-                        "Your clarification:",
-                        placeholder="e.g., AAPL, best by return, past month"
-                    )
-                    clarify_button = st.form_submit_button("Submit Clarification")
+        # Run the workflow with history
+        result = run_workflow(query, selected_client, conversation_history)
 
-                    if clarify_button and clarification:
-                        # Rerun with enhanced query
-                        enhanced_query = f"{query} ({clarification})"
-                        result = run_workflow(enhanced_query, selected_client, conversation_history)
+        # Phase 2: Data Collection
+        if result.get("needs_portfolio"):
+            status_text.info("💼 Portfolio Agent: Loading your holdings...")
+            progress_bar.progress(40)
 
-                        # Process result normally if no longer needs clarification
-                        if not result.get("needs_clarification"):
-                            # Display response
-                            st.markdown("### 💡 Response")
-                            st.markdown(result["response"])
+        if result.get("needs_market"):
+            status_text.info("📈 Market Agent: Fetching live market data...")
+            progress_bar.progress(60)
 
-                            # Add to history
-                            conversation_history.append({"role": "user", "content": enhanced_query})
-                            conversation_history.append({"role": "assistant", "content": result["response"]})
-                            st.session_state[history_key] = conversation_history[-10:]  # Keep last 5 Q&A pairs
+        # Phase 3: Synthesis
+        if result.get("collaboration_findings"):
+            status_text.info("🤝 Collaboration Agent: Synthesizing insights...")
+            progress_bar.progress(75)
 
-            else:
-                # No clarification needed - display response
-                st.markdown("### 💡 Response")
-                st.markdown(result.get("response", "No response generated."))
+        # Phase 4: Validation
+        status_text.info("✅ Validator: Checking accuracy...")
+        progress_bar.progress(90)
 
-                # Add to conversation history (Feature 4)
-                conversation_history.append({"role": "user", "content": query})
-                conversation_history.append({"role": "assistant", "content": result["response"]})
+        # Complete
+        progress_bar.progress(100)
+        status_text.success("✨ Analysis complete!")
 
-                # Keep only last 5 Q&A pairs (10 messages)
-                st.session_state[history_key] = conversation_history[-10:]
+        # Check if clarification is needed (Feature 5)
+        if result.get("needs_clarification"):
+            st.warning("🤔 Clarification Needed")
+            st.info(result.get("clarification_message", "Please clarify your query."))
 
-            # Show which agents were activated
-            with st.expander("🔍 View Agent Activity"):
-                st.markdown("**Planning Decision:**")
-                st.text(result.get("plan", "No plan generated."))
+            # Show clarification input
+            with st.form("clarification_form"):
+                clarification = st.text_input(
+                    "Your clarification:",
+                    placeholder="e.g., AAPL, best by return, past month"
+                )
+                clarify_button = st.form_submit_button("Submit Clarification")
 
-                col_a, col_b, col_c = st.columns(3)
+                if clarify_button and clarification:
+                    # Rerun with enhanced query
+                    enhanced_query = f"{query} ({clarification})"
+                    result = run_workflow(enhanced_query, selected_client, conversation_history)
 
-                with col_a:
-                    if result.get("needs_portfolio"):
-                        st.success("✅ Portfolio Agent")
-                    else:
-                        st.info("⏭️ Portfolio Agent")
+                    # Process result normally if no longer needs clarification
+                    if not result.get("needs_clarification"):
+                        # Display response
+                        st.markdown("### 💡 Response")
+                        st.markdown(result["response"])
 
-                with col_b:
-                    if result.get("needs_market"):
-                        st.success("✅ Market Agent")
-                    else:
-                        st.info("⏭️ Market Agent")
+                        # Add to history with timestamps
+                        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                        conversation_history.append({"role": "user", "content": enhanced_query, "timestamp": timestamp})
+                        conversation_history.append({"role": "assistant", "content": result["response"], "timestamp": timestamp})
+                        st.session_state[history_key] = conversation_history[-10:]  # Keep last 5 Q&A pairs
 
-                with col_c:
-                    if result.get("collaboration_findings"):
-                        st.success("✅ Collaboration Agent")
-                        collab = result["collaboration_findings"]
-                        st.caption(f"Synthesized {collab.get('portfolio_holdings_analyzed', 0)} holdings with {collab.get('market_data_points', 0)} market data points")
-                    else:
-                        st.info("⏭️ Collaboration Agent")
+        else:
+            # No clarification needed - display response
+            st.markdown("### 💡 Response")
+            st.markdown(result.get("response", "No response generated."))
 
-                st.markdown("**Validation:**")
-                if result.get("validated"):
-                    st.success("✅ Response Validated")
-                else:
-                    st.warning("⚠️ Response Not Validated")
+            # Add to conversation history with timestamps (Feature 4)
+            timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            conversation_history.append({"role": "user", "content": query, "timestamp": timestamp})
+            conversation_history.append({"role": "assistant", "content": result["response"], "timestamp": timestamp})
 
-            # Show raw data (optional)
-            with st.expander("📊 View Raw Data"):
-                if result.get("portfolio_data"):
-                    st.markdown("**Portfolio Data:**")
-                    st.json(result["portfolio_data"])
+            # Keep only last 5 Q&A pairs (10 messages)
+            st.session_state[history_key] = conversation_history[-10:]
 
-                if result.get("market_data"):
-                    st.markdown("**Market Data:**")
-                    st.json(result["market_data"])
+        # Show which agents were activated - Timeline View
+        with st.expander("🔍 Agent Workflow Timeline", expanded=True):
+            st.markdown("**Planning Decision:**")
+            st.caption(result.get("plan", "No plan generated."))
+            st.markdown("---")
 
-        except Exception as e:
-            st.error(f"An error occurred: {str(e)}")
-            st.exception(e)
+            # Create timeline data
+            timeline_data = []
+
+            # Always show Planner (runs first)
+            timeline_data.append({
+                "Agent": "🎯 Planner",
+                "Status": "✅ Active",
+                "Phase": "Analysis"
+            })
+
+            # Portfolio Agent (if activated)
+            if result.get("needs_portfolio"):
+                timeline_data.append({
+                    "Agent": "💼 Portfolio",
+                    "Status": "✅ Active",
+                    "Phase": "Data Collection"
+                })
+
+            # Market Agent (if activated)
+            if result.get("needs_market"):
+                timeline_data.append({
+                    "Agent": "📈 Market",
+                    "Status": "✅ Active",
+                    "Phase": "Data Collection"
+                })
+
+            # Collaboration Agent (if activated)
+            if result.get("collaboration_findings"):
+                collab = result["collaboration_findings"]
+                timeline_data.append({
+                    "Agent": "🤝 Collaboration",
+                    "Status": "✅ Active",
+                    "Phase": f"Synthesis ({collab.get('portfolio_holdings_analyzed', 0)} holdings + {collab.get('market_data_points', 0)} data points)"
+                })
+
+            # Validator (always runs last)
+            timeline_data.append({
+                "Agent": "✅ Validator",
+                "Status": "✅ Active" if result.get("validated") else "⚠️ Flagged",
+                "Phase": "Validation"
+            })
+
+            # Display as DataFrame
+            df_timeline = pd.DataFrame(timeline_data)
+            st.dataframe(df_timeline, use_container_width=True, hide_index=True)
+
+            # Visual flow diagram
+            st.markdown("**Execution Flow:**")
+            agent_flow = " → ".join([agent["Agent"] for agent in timeline_data])
+            st.info(agent_flow)
+
+        # Show raw data (optional)
+        with st.expander("📊 View Raw Data"):
+            if result.get("portfolio_data"):
+                st.markdown("**Portfolio Data:**")
+                st.json(result["portfolio_data"])
+
+            if result.get("market_data"):
+                st.markdown("**Market Data:**")
+                st.json(result["market_data"])
+
+    except Exception as e:
+        st.error(f"An error occurred: {str(e)}")
+        st.exception(e)
 
 elif submit_button:
     st.warning("Please enter a query.")

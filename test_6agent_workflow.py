@@ -23,11 +23,7 @@ load_dotenv()
 # Add src to path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from src.workflows.trading_workflow import (
-    run_6agent_analysis,
-    format_result_for_display,
-    run_batch_analysis
-)
+from src.workflows.trading_workflow import run_fast_6agent_analysis
 
 
 async def test_single_stock(symbol: str = "AAPL"):
@@ -55,66 +51,30 @@ async def test_single_stock(symbol: str = "AAPL"):
     print()
 
     try:
-        # Run analysis
-        result = await run_6agent_analysis(
+        # Run analysis using the new fast workflow
+        result = await run_fast_6agent_analysis(
             stock_symbol=symbol,
-            question="Should I buy this stock?",
-            portfolio_value=100000.0,  # $100,000 portfolio
-            risk_per_trade=2.0,  # 2% risk per trade
-            model_name="gpt-4o-mini",
-            max_turns=20
+            question="Should I buy this stock?"
         )
 
         # Display formatted results
-        print(format_result_for_display(result))
-
-        # Display individual agent outputs
         print("\n" + "=" * 100)
-        print(" " * 35 + "DETAILED AGENT OUTPUTS")
+        print(f"📊 ANALYSIS COMPLETE FOR {result['symbol']}")
         print("=" * 100)
-        print()
+        print(f"\n{result['final_report']}\n")
 
-        for agent_name, output in result.agent_outputs.items():
-            print(f"\n{'=' * 100}")
-            print(f"📊 {agent_name}")
-            print(f"{'=' * 100}")
-            print(output)
+        # Display conversation history
+        if 'messages' in result:
+            print("\n" + "=" * 100)
+            print(" " * 35 + "AGENT CONVERSATION")
+            print("=" * 100)
             print()
-
-        # Display execution recommendations
-        print("\n" + "=" * 100)
-        print(" " * 35 + "ACTION ITEMS")
-        print("=" * 100)
-        print()
-
-        if result.recommendation == "BUY":
-            print("✅ RECOMMENDATION: BUY")
-            print(f"   Confidence: {result.confidence}%")
-            print()
-            print("📋 Next Steps:")
-            print(f"   1. Set limit order at ${result.execution_plan.get('entry_price', 'N/A')}")
-            print(f"   2. Set stop-loss at ${result.execution_plan.get('stop_loss', 'N/A')}")
-            print(f"   3. Set target at ${result.execution_plan.get('target_price', 'N/A')}")
-            print(f"   4. Position size: {result.execution_plan.get('position_size_pct', 'N/A')}% of portfolio")
-            print(f"   5. Timeline: {result.execution_plan.get('timeline', 'N/A')}")
-        elif result.recommendation == "HOLD":
-            print("⚠️ RECOMMENDATION: HOLD")
-            print(f"   Confidence: {result.confidence}%")
-            print()
-            print("📋 Next Steps:")
-            print("   1. Wait for clearer signals before entering")
-            print("   2. Monitor for trend confirmation")
-            print("   3. Watch for key support/resistance levels")
-            print("   4. Re-analyze if market conditions change")
-        else:
-            print("❌ RECOMMENDATION: SELL/AVOID")
-            print(f"   Confidence: {result.confidence}%")
-            print()
-            print("📋 Next Steps:")
-            print("   1. Avoid new positions in this stock")
-            print("   2. Consider exiting existing positions")
-            print("   3. Look for better risk/reward opportunities")
-            print("   4. Re-evaluate if fundamentals improve")
+            for msg in result['messages'][-10:]:  # Show last 10 messages
+                speaker = msg.source if hasattr(msg, 'source') else 'Unknown'
+                content = msg.content if hasattr(msg, 'content') else str(msg)
+                print(f"📌 {speaker}:")
+                print(f"   {content[:200]}...")  # First 200 chars
+                print()
 
         print()
         print("=" * 100)
@@ -150,12 +110,21 @@ async def test_multiple_stocks():
     print("⏳ This may take several minutes...")
     print()
 
+    results = {}
+
     try:
-        results = await run_batch_analysis(
-            stock_symbols=symbols,
-            portfolio_value=100000.0,
-            risk_per_trade=2.0
-        )
+        for symbol in symbols:
+            print(f"\n📊 Analyzing {symbol}...")
+            try:
+                result = await run_fast_6agent_analysis(
+                    stock_symbol=symbol,
+                    question="Should I buy this stock?"
+                )
+                results[symbol] = result
+                print(f"✅ {symbol} complete")
+            except Exception as e:
+                print(f"❌ {symbol} failed: {str(e)}")
+                results[symbol] = None
 
         print("\n" + "=" * 100)
         print(" " * 35 + "BATCH RESULTS SUMMARY")
@@ -165,10 +134,7 @@ async def test_multiple_stocks():
         for symbol, result in results.items():
             if result:
                 print(f"📊 {symbol}:")
-                print(f"   Recommendation: {result.recommendation}")
-                print(f"   Confidence: {result.confidence}%")
-                print(f"   Entry: ${result.execution_plan.get('entry_price', 'N/A')}")
-                print(f"   Target: ${result.execution_plan.get('target_price', 'N/A')}")
+                print(f"   Final Report Preview: {result.get('final_report', 'N/A')[:100]}...")
                 print()
             else:
                 print(f"❌ {symbol}: Analysis failed")

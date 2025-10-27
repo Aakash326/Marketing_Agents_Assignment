@@ -16,10 +16,10 @@ PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../..
 sys.path.insert(0, PROJECT_ROOT)
 
 try:
-    from src.workflows.trading_workflow import run_6agent_analysis
+    from src.workflows.trading_workflow import run_fast_6agent_analysis
 except ImportError as e:
     logging.error(f"Failed to import trading_workflow: {e}")
-    run_6agent_analysis = None
+    run_fast_6agent_analysis = None
 
 logger = logging.getLogger(__name__)
 
@@ -70,7 +70,7 @@ async def analyze_stock(request: StockAnalysisRequest) -> StockAnalysisResponse:
     """
     logger.info(f"Processing stock analysis request: {request.symbol} - {request.question}")
 
-    if run_6agent_analysis is None:
+    if run_fast_6agent_analysis is None:
         raise HTTPException(
             status_code=500,
             detail="Trading workflow not available. Please check AutoGen installation."
@@ -78,31 +78,31 @@ async def analyze_stock(request: StockAnalysisRequest) -> StockAnalysisResponse:
 
     try:
         # Run the 6-agent workflow asynchronously
-        result = await run_6agent_analysis(
-            request.symbol,
-            request.question
+        result = await run_fast_6agent_analysis(
+            stock_symbol=request.symbol,
+            question=request.question
         )
 
-        # TradingWorkflowResult already contains structured data
+        # Result is a dict containing structured data
         # Extract execution plan as string from the dict
-        execution_plan_str = str(result.execution_plan) if result.execution_plan else "No execution plan generated"
+        execution_plan_str = str(result.get('execution_plan', {})) if result.get('execution_plan') else "No execution plan generated"
 
         # Build response using the structured result
         response = StockAnalysisResponse(
-            symbol=result.symbol,
+            symbol=result.get('symbol', request.symbol),
             question=request.question,
-            recommendation=result.recommendation,
-            confidence=result.confidence,
-            summary=result.summary,
+            recommendation=result.get('recommendation', 'HOLD'),
+            confidence=result.get('confidence', 50),
+            summary=result.get('summary', 'Analysis completed'),
             execution_plan=execution_plan_str,
-            technical_analysis=result.agent_outputs.get('QuantitativeAnalyst', 'No technical analysis available'),
-            fundamental_analysis=result.agent_outputs.get('DataAnalyst', 'No fundamental analysis available'),
-            risk_assessment=result.agent_outputs.get('RiskManager', 'No risk assessment available'),
-            agent_outputs=result.agent_outputs,
-            timestamp=result.timestamp
+            technical_analysis=result.get('agent_outputs', {}).get('QuantitativeAnalyst', 'No technical analysis available'),
+            fundamental_analysis=result.get('agent_outputs', {}).get('DataAnalyst', 'No fundamental analysis available'),
+            risk_assessment=result.get('agent_outputs', {}).get('RiskManager', 'No risk assessment available'),
+            agent_outputs=result.get('agent_outputs', {}),
+            timestamp=result.get('timestamp', '')
         )
 
-        logger.info(f"Analysis completed successfully: {result.recommendation} with {result.confidence}% confidence")
+        logger.info(f"Analysis completed successfully: {result.get('recommendation', 'HOLD')} with {result.get('confidence', 50)}% confidence")
         return response
 
     except Exception as e:
@@ -125,5 +125,5 @@ async def get_agents_status():
             {"name": "StrategyDeveloper", "status": "ready", "description": "Entry/exit strategy"},
             {"name": "ReportAgent", "status": "ready", "description": "Final recommendation synthesis"}
         ],
-        "workflow_available": run_6agent_analysis is not None
+        "workflow_available": run_fast_6agent_analysis is not None
     }

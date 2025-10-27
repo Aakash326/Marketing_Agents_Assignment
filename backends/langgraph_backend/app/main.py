@@ -19,7 +19,7 @@ if str(project_root) not in sys.path:
     print(f"Added project root to sys.path: {project_root}")
 
 from app.config import settings, validate_settings
-from app.api.routes import query, portfolio, health, stock_analysis
+from app.api.routes import query, portfolio, health, stock_analysis, websocket, session
 from app.middleware.error_handler import setup_exception_handlers
 from app.middleware.logging_middleware import LoggingMiddleware
 
@@ -59,6 +59,8 @@ app.include_router(health.router, prefix="/api", tags=["Health"])
 app.include_router(query.router, prefix="/api", tags=["Query"])
 app.include_router(portfolio.router, prefix="/api", tags=["Portfolio"])
 app.include_router(stock_analysis.router, prefix="/api", tags=["Stock Analysis"])
+app.include_router(session.router, prefix="/api", tags=["Sessions"])
+app.include_router(websocket.router, tags=["WebSocket"])
 
 
 @app.on_event("startup")
