@@ -5,11 +5,17 @@ import requests
 from dotenv import load_dotenv
 from typing import Annotated
 
-default_model_client=get_model_client()
+try:
+    default_model_client = get_model_client()
+except Exception as e:
+    print(f"Warning: Could not create default model client in strategy_developer: {e}")
+    default_model_client = None
 
 def create_strategy_developer(model_client=None):
     if model_client is None:
         model_client = default_model_client
+    if model_client is None:
+        raise ValueError("Model client is None. Please ensure OPENAI_API_KEY is set in your .env file.")
     strategy_developer_agent=AssistantAgent(
         name="StrategyDeveloper",
         model_client=model_client,

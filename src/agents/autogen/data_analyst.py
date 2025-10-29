@@ -7,7 +7,13 @@ from typing import Annotated
 from tavily import TavilyClient
 
 load_dotenv()
-default_model_client=get_model_client()
+
+# Get default model client with error handling
+try:
+    default_model_client = get_model_client()
+except Exception as e:
+    print(f"Warning: Could not create default model client in data_analyst: {e}")
+    default_model_client = None
 
 # Initialize Tavily client for web research
 tavily_api_key = os.getenv('TAVILY_API_KEY')
@@ -60,6 +66,9 @@ def search_company_web_info(company_symbol: str, company_name: str = "") -> str:
 def create_data_analyst(model_client=None):
     if model_client is None:
         model_client = default_model_client
+    
+    if model_client is None:
+        raise ValueError("Model client is None. Please ensure OPENAI_API_KEY is set in your .env file.")
 
     data_analyst_agent=AssistantAgent(
         name="DataAnalyst",

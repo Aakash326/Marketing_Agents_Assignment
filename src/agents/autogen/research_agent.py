@@ -8,7 +8,11 @@ from typing import Annotated
 load_dotenv()
 Alpha=os.getenv("ALPHA")
 
-model_client=get_model_client()
+try:
+    model_client = get_model_client()
+except Exception as e:
+    print(f"Warning: Could not create default model client in research_agent: {e}")
+    model_client = None
 
 def calculate_rsi(closes, period=14):
     """Calculate RSI from price array"""
@@ -230,7 +234,9 @@ def get_comprehensive_stock_data(symbol: Annotated[str, "Stock symbol like AAPL,
         return f"❌ Error getting comprehensive data for {symbol}: {str(e)}"
 def create_organiser_agent(model_client=None):
     if model_client is None:
-        model_client = get_model_client()
+        model_client = globals().get('model_client')
+    if model_client is None:
+        raise ValueError("Model client is None. Please ensure OPENAI_API_KEY is set in your .env file.")
 
     organiser_agent=AssistantAgent(
         name="OrganiserAgent",

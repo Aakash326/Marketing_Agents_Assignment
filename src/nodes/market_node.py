@@ -29,6 +29,7 @@ def market_node(state: Dict) -> Dict:
     portfolio_data = state.get("portfolio_data", {})
     existing_response = state.get("response", "")
     wants_recommendations = state.get("wants_recommendations", False)
+    conversation_history = state.get("conversation_history", [])
 
     # Determine which stocks to analyze
     tickers = []
@@ -43,29 +44,48 @@ def market_node(state: Dict) -> Dict:
         import re
         query_upper = query.upper()
         
+        # Check conversation history for ticker mentions if query is very short (likely a follow-up)
+        context_text = query_upper
+        if len(query.split()) <= 3 and conversation_history:
+            # User might be saying "yes", "tell me more", etc.
+            # Look at last 2 messages for ticker context
+            for msg in conversation_history[-4:]:
+                if msg.get("role") in ["user", "assistant"]:
+                    context_text += " " + msg.get("content", "").upper()
+
         # Common stock tickers to look for
         common_tickers = [
             "AAPL", "MSFT", "GOOGL", "GOOG", "AMZN", "TSLA", "META", "NVDA", "AMD",
             "SPY", "QQQ", "VTI", "BND", "VXUS", "VYM", "VTEB", "VOO", "VEA",
             "NFLX", "DIS", "INTC", "CSCO", "ADBE", "CRM", "ORCL", "IBM"
         ]
-        
+
+        # Blacklist of common English words that look like tickers
+        english_words_blacklist = [
+            "DATE", "YEAR", "RETURN", "GAIN", "LOSS", "HOLD", "BEST", "WORST",
+            "TOP", "TOTAL", "VALUE", "PRICE", "STOCK", "HAVE", "DOES", "WHAT",
+            "WHICH", "ABOUT", "FROM", "WITH", "THAT", "THIS", "THEM", "THEY",
+            "SHOW", "TELL", "GIVE", "MAKE", "TAKE", "BEEN", "WERE", "WILL",
+            "YOUR", "THEIR", "THERE", "WHERE", "WHEN", "WOULD", "COULD", "SHOULD"
+        ]
+
         # Method 1: Look for exact word matches (separated by spaces)
-        words = query_upper.split()
+        words = context_text.split()
         for word in words:
             # Remove punctuation
             clean_word = re.sub(r'[^\w]', '', word)
-            if clean_word in common_tickers:
+            if clean_word in common_tickers and clean_word not in english_words_blacklist:
                 tickers.append(clean_word)
-        
+
         # Method 2: If no tickers found, try to find any uppercase words that match stock patterns
         if not tickers:
             # Find 2-5 letter uppercase words (common ticker pattern)
-            potential_tickers = re.findall(r'\b[A-Z]{2,5}\b', query.upper())
+            potential_tickers = re.findall(r'\b[A-Z]{2,5}\b', context_text)
             for ticker in potential_tickers:
-                if ticker in common_tickers:
+                # Only accept if it's in common tickers AND not in blacklist
+                if ticker in common_tickers and ticker not in english_words_blacklist:
                     tickers.append(ticker)
-        
+
         # Remove duplicates
         tickers = list(set(tickers))
 

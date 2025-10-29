@@ -9,10 +9,48 @@ import logging
 import pandas as pd
 import os
 from datetime import datetime
+import yfinance as yf
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
+
+
+def get_current_price(symbol: str, fallback_price: float) -> float:
+    """
+    Fetch current market price for a symbol using yfinance.
+    
+    Args:
+        symbol: Stock ticker symbol
+        fallback_price: Purchase price to use if fetch fails
+        
+    Returns:
+        Current market price or fallback price
+    """
+    try:
+        ticker = yf.Ticker(symbol)
+        # Try to get current price from fast_info
+        try:
+            current_price = ticker.fast_info['lastPrice']
+            if current_price and current_price > 0:
+                return round(float(current_price), 2)
+        except:
+            pass
+        
+        # Fallback: Try historical data (last close)
+        hist = ticker.history(period='1d')
+        if not hist.empty:
+            current_price = hist['Close'].iloc[-1]
+            if current_price and current_price > 0:
+                return round(float(current_price), 2)
+        
+        # If all fails, return purchase price (no change)
+        logger.warning(f"Could not fetch price for {symbol}, using purchase price")
+        return fallback_price
+        
+    except Exception as e:
+        logger.error(f"Error fetching price for {symbol}: {e}")
+        return fallback_price
 
 
 class Holding(BaseModel):
@@ -85,14 +123,18 @@ def load_portfolio_from_excel(client_id: str) -> Optional[Portfolio]:
         total_value = 0.0
         
         for _, row in client_data.iterrows():
-            # Use purchase price as current price (can be enhanced with live data)
+            # Get purchase price from Excel
             purchase_price = float(row['Purchase Price'])
-            current_price = purchase_price * (1 + (hash(str(row['symbol'])) % 20 - 10) / 100)  # Simulated price change
             quantity = int(row['quantity'])
+            symbol = str(row['symbol'])
+            
+            # Fetch real current price from yfinance
+            current_price = get_current_price(symbol, purchase_price)
+            
             market_value = quantity * current_price
             
             holding = Holding(
-                symbol=str(row['symbol']),
+                symbol=symbol,
                 security_name=str(row.get('security_name', row['symbol'])),
                 asset_class=str(row.get('asset_class', 'Unknown')),
                 sector=str(row.get('sector', 'Unknown')),

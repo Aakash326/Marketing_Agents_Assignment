@@ -5,12 +5,20 @@ import requests
 from dotenv import load_dotenv
 from typing import Annotated
 
-model_client = get_model_client()
+try:
+    model_client = get_model_client()
+except Exception as e:
+    print(f"Warning: Could not create default model client in report_agent: {e}")
+    model_client = None
 
-def create_report_agent(model_client=None):
+def create_report_agent(model_client_param=None):
+    if model_client_param is None:
+        model_client_param = model_client
+    if model_client_param is None:
+        raise ValueError("Model client is None. Please ensure OPENAI_API_KEY is set in your .env file.")
     report_agent = AssistantAgent(
         name="ReportAgent",
-        model_client=model_client,
+        model_client=model_client_param,
         system_message="""You are the Chief Investment Officer and FINAL Decision Authority responsible for synthesizing all agent analyses into ONE comprehensive final report.
 
 🚨 CRITICAL INSTRUCTIONS:

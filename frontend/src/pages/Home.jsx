@@ -25,7 +25,13 @@ function Home() {
       color: 'from-green-500 to-emerald-500'
     },
     {
-      icon: '💡',
+      icon: '📚',
+      title: 'Stock Market Knowledge',
+      description: 'RAG-powered assistant for learning about stocks and trading',
+      color: 'from-teal-500 to-cyan-500'
+    },
+    {
+      icon: '�💡',
       title: 'Alpha Vantage Integration',
       description: 'Real market data with intelligent fallback mechanisms',
       color: 'from-orange-500 to-red-500'
@@ -34,7 +40,9 @@ function Home() {
 
   const tools = [
     { name: 'Portfolio Intelligence', path: '/portfolio', icon: '📊', desc: 'Analyze your portfolio with AI agents' },
-    { name: 'Stock Analysis', path: '/stock-analysis', icon: '📈', desc: '6-agent trading workflow' }
+    { name: 'Stock Analysis', path: '/stock-analysis', icon: '📈', desc: '6-agent trading workflow' },
+    { name: 'Stock Market Learning', path: '/chat', icon: '📚', desc: 'Learn about stocks with RAG knowledge base' },
+    { name: 'System Design', path: '/presentation', icon: '🎯', desc: 'Architecture & design presentation' }
   ];
 
   return (

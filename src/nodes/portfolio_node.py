@@ -26,6 +26,17 @@ def portfolio_node(state: Dict) -> Dict:
     query = state.get("query", "")
     client_id = state.get("client_id", "")
     wants_recommendations = state.get("wants_recommendations", False)
+    conversation_history = state.get("conversation_history", [])
+    
+    # Build context from conversation history for better understanding
+    history_context = ""
+    if conversation_history and len(conversation_history) > 0:
+        history_context = "\n\nRecent Conversation Context:\n"
+        for msg in conversation_history[-4:]:
+            role = msg.get("role", "").capitalize()
+            content = msg.get("content", "")[:200]
+            history_context += f"{role}: {content}\n"
+        history_context += "\nNote: If the current query is very short (e.g., 'yes', 'tell me more'), use the above context to understand what the user is asking about.\n"
 
     # Get path to portfolios.xlsx (in project root)
     project_root = Path(__file__).parent.parent.parent
@@ -51,58 +62,145 @@ def portfolio_node(state: Dict) -> Dict:
             analysis_prompt = f"""You are a portfolio risk analysis agent.
 
 USER'S QUESTION: "{query}"
+{history_context}
 
 {portfolio_text}
 
 CRITICAL INSTRUCTIONS - RISK PROFILE ANALYSIS:
 You MUST analyze the risk profile and diversification of this portfolio. DO NOT just report the total value.
 
+FORMAT YOUR RESPONSE WITH CLEAN MARKDOWN:
+- Use ## for main sections
+- Use **bold** for key metrics
+- Use bullet points with - for lists
+- Keep paragraphs short and readable
+- Add blank lines between sections
+
 Perform the following analysis:
 
-1. ASSET CLASS DISTRIBUTION:
-   - Count how many holdings are in each asset class (Stocks, Bonds, ETFs, etc.)
-   - Calculate percentage of portfolio in each asset class
-   - Example: "60% Stocks, 30% Bonds, 10% ETFs"
+## Asset Class Distribution
+- Count how many holdings are in each asset class (Stocks, Bonds, ETFs, etc.)
+- Calculate percentage of portfolio in each asset class
+- Present as: **60% Stocks**, **30% Bonds**, **10% ETFs**
 
-2. SECTOR ALLOCATION:
-   - List all sectors represented (Technology, Healthcare, Consumer, Financial, etc.)
-   - Count holdings per sector
-   - Identify dominant sectors
-   - Example: "40% Technology, 25% Healthcare, 20% Consumer, 15% Financial"
+## Sector Allocation
+- List all sectors represented
+- Count holdings per sector
+- Identify dominant sectors
+- Present as: **40% Technology**, **25% Healthcare**, etc.
 
-3. CONCENTRATION RISK:
-   - Are holdings too concentrated in one sector or asset class?
-   - Is there over-reliance on a few positions?
-   - Are holdings well-spread across different sectors?
+## Concentration Risk
+- Are holdings too concentrated in one sector or asset class?
+- Is there over-reliance on a few positions?
+- Are holdings well-spread across different sectors?
 
-4. RISK ASSESSMENT:
-   - Overall risk level: Low, Moderate, or High
-   - Diversification quality: Well-diversified, Moderately diversified, or Concentrated
-   - Key risks identified
+## Risk Assessment
+- **Overall Risk Level**: Low / Moderate / High
+- **Diversification Quality**: Well-diversified / Moderately diversified / Concentrated
+- **Key Risks**: List specific risks identified
 
-Provide a comprehensive risk profile analysis based on the portfolio data above.
+Provide a comprehensive risk profile analysis with clean, readable markdown formatting.
 
 Your response:"""
         else:
             # GENERAL INFORMATION MODE
-            analysis_prompt = f"""You are a portfolio analysis agent.
+            # Check if asking about performance/returns
+            is_performance_query = any(keyword in query_lower for keyword in
+                                      ["best return", "worst return", "best performer", "worst performer",
+                                       "highest return", "lowest return", "top performer", "bottom performer",
+                                       "year-to-date", "ytd", "performance", "gain", "loss"])
+
+            # Check if asking about what stocks they own
+            is_holdings_query = any(keyword in query_lower for keyword in
+                                   ["what stocks", "what do i own", "my holdings", "what do i have",
+                                    "show my stocks", "list my stocks", "my stocks"])
+
+            if is_performance_query:
+                analysis_prompt = f"""You are a portfolio performance analysis agent.
 
 USER'S QUESTION: "{query}"
+{history_context}
+
+{portfolio_text}
+
+CRITICAL INSTRUCTIONS:
+- The user is asking about PERFORMANCE/RETURNS of their holdings
+- Words like "DATE", "YEAR", "RETURN", "GAIN", "LOSS" are ENGLISH WORDS, NOT stock ticker symbols
+- You MUST analyze the actual holdings data provided above
+- Look at each holding's cost basis vs current price to calculate returns
+- DO NOT search for ticker symbols like "DATE", "YEAR", "TO", "RETURN"
+
+ANALYZE THE PORTFOLIO DATA:
+1. For each holding, calculate the return: ((Current Price - Cost Basis) / Cost Basis) * 100
+2. Identify which holdings have the best/worst returns
+3. Present the results with clear formatting
+
+FORMAT YOUR RESPONSE:
+## Performance Analysis
+
+**Best Performers:**
+- **[Ticker]**: +XX.X% return ($XXX,XXX gain)
+- **[Ticker]**: +XX.X% return ($XXX,XXX gain)
+
+**Worst Performers:**
+- **[Ticker]**: -XX.X% return ($XXX,XXX loss)
+
+**Summary:** Brief analysis of overall portfolio performance
+
+Your response:"""
+            elif is_holdings_query:
+                analysis_prompt = f"""You are a portfolio analysis agent.
+
+USER'S QUESTION: "{query}"
+{history_context}
+
+{portfolio_text}
+
+CRITICAL: The user is asking what stocks/holdings they own. You MUST list all their holdings.
+
+FORMAT YOUR RESPONSE LIKE THIS:
+
+You own the following holdings:
+
+**1. [Ticker Symbol] - [Full Name]**
+- Shares: [X,XXX]
+- Current Price: $XX.XX
+- Market Value: $XXX,XXX.XX
+
+**2. [Ticker Symbol] - [Full Name]**
+- Shares: [X,XXX]
+- Current Price: $XX.XX
+- Market Value: $XXX,XXX.XX
+
+(Continue for all holdings...)
+
+**Total Portfolio Value**: $X,XXX,XXX.XX
+
+Do NOT just report the total value. List ALL holdings with their details.
+
+Your response:"""
+            else:
+                analysis_prompt = f"""You are a portfolio analysis agent.
+
+USER'S QUESTION: "{query}"
+{history_context}
 
 IMPORTANT CONTEXT UNDERSTANDING:
 - If the user asks about "total value", "portfolio value", "total worth" - they are asking for the SUM of all holding values
-- Words like "TOTAL", "VALUE", "HOLD", "OWN", "DO" in questions are ENGLISH WORDS, NOT stock ticker symbols
+- Words like "TOTAL", "VALUE", "HOLD", "OWN", "DO", "DATE", "YEAR", "TO", "RETURN" in questions are ENGLISH WORDS, NOT stock ticker symbols
 - The portfolio data below ALREADY includes "Total Portfolio Value" calculated for you
 - Simply read and report the total value from the data provided
+- If asking about performance, analyze the holdings' cost basis vs current price
 
 {portfolio_text}
 
 INSTRUCTIONS:
 1. The data above already shows "Total Portfolio Value" - use that number
-2. If they ask "what stocks do I own" - list the holdings
-3. If they ask about "total value" or similar - report the "Total Portfolio Value" shown above
-4. Do NOT search for ticker symbols like "TOTAL", "VALUE", "HOLD", "OWN" - these are English words
+2. If they ask about "total value" or similar - report the "Total Portfolio Value" shown above
+3. Do NOT search for ticker symbols like "TOTAL", "VALUE", "HOLD", "OWN", "DATE", "YEAR" - these are English words
+4. Analyze the actual portfolio data provided above
 5. Be factual and direct
+6. Use clean markdown formatting with ## headers and **bold** for emphasis
 
 Your response:"""
     else:
@@ -117,6 +215,7 @@ Your response:"""
 
 Client ID: {client_id}
 User Query: "{query}"
+{history_context}
 
 Portfolio Data:
 {portfolio_text}

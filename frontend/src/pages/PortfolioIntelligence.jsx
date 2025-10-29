@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import axios from 'axios';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line } from 'recharts';
 
 function PortfolioIntelligence() {
@@ -171,7 +173,7 @@ function PortfolioIntelligence() {
               <div className="bg-white rounded-lg p-4 shadow">
                 <p className="text-sm text-gray-600 mb-1">Top Holding</p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {portfolioData.holdings?.[0]?.ticker || 'N/A'}
+                  {portfolioData.holdings?.[0]?.symbol || portfolioData.holdings?.[0]?.ticker || 'N/A'}
                 </p>
                 <p className="text-xs text-gray-500">
                   ${(portfolioData.holdings?.[0]?.market_value || 0).toLocaleString()}
@@ -189,7 +191,7 @@ function PortfolioIntelligence() {
                       key={i}
                       className="px-3 py-1 bg-white rounded-full text-sm font-medium text-gray-700 shadow-sm"
                     >
-                      {holding.ticker} ({holding.shares} shares)
+                      {holding.symbol || holding.ticker} ({holding.quantity || holding.shares} shares)
                     </span>
                   ))}
                 </div>
@@ -218,8 +220,8 @@ function PortfolioIntelligence() {
                   <PieChart>
                     <Pie
                       data={portfolioData.holdings.map((h, i) => ({
-                        name: h.ticker || h.symbol,
-                        value: h.market_value || (h.shares * h.current_price) || 0,
+                        name: h.symbol || h.ticker,
+                        value: h.market_value || ((h.quantity || h.shares) * h.current_price) || 0,
                         color: `hsl(${(i * 360) / portfolioData.holdings.length}, 70%, 60%)`
                       }))}
                       cx="50%"
@@ -245,8 +247,8 @@ function PortfolioIntelligence() {
                 <ResponsiveContainer width="100%" height={300}>
                   <BarChart
                     data={portfolioData.holdings.map(h => ({
-                      name: h.ticker || h.symbol,
-                      value: h.market_value || (h.shares * h.current_price) || 0
+                      name: h.symbol || h.ticker,
+                      value: h.market_value || ((h.quantity || h.shares) * h.current_price) || 0
                     })).sort((a, b) => b.value - a.value)}
                   >
                     <CartesianGrid strokeDasharray="3 3" />
@@ -276,9 +278,9 @@ function PortfolioIntelligence() {
                   </thead>
                   <tbody className="divide-y divide-gray-200">
                     {portfolioData.holdings.map((holding, i) => {
-                      const currentPrice = holding.current_price || holding.avg_price || 0;
-                      const avgPrice = holding.avg_price || holding.current_price || 0;
-                      const shares = holding.shares || holding.quantity || 0;
+                      const currentPrice = holding.current_price || holding.purchase_price || holding.avg_price || 0;
+                      const avgPrice = holding.purchase_price || holding.avg_price || holding.current_price || 0;
+                      const shares = holding.quantity || holding.shares || 0;
                       const marketValue = holding.market_value || (shares * currentPrice);
                       const gainLoss = ((currentPrice - avgPrice) / avgPrice) * 100;
 
@@ -404,8 +406,26 @@ function PortfolioIntelligence() {
               </div>
             )}
 
-            <div className="prose max-w-none">
-              <p className="text-gray-700 whitespace-pre-wrap">{response.answer}</p>
+            <div className="prose prose-sm max-w-none">
+              <ReactMarkdown
+                remarkPlugins={[remarkGfm]}
+                components={{
+                  h1: ({node, ...props}) => <h1 className="text-2xl font-bold mb-3 mt-4 text-gray-900" {...props} />,
+                  h2: ({node, ...props}) => <h2 className="text-xl font-bold mb-2 mt-4 text-gray-800" {...props} />,
+                  h3: ({node, ...props}) => <h3 className="text-lg font-semibold mb-2 mt-3 text-gray-800" {...props} />,
+                  p: ({node, ...props}) => <p className="mb-3 text-gray-700 leading-relaxed" {...props} />,
+                  ul: ({node, ...props}) => <ul className="list-disc ml-6 mb-3 space-y-1" {...props} />,
+                  ol: ({node, ...props}) => <ol className="list-decimal ml-6 mb-3 space-y-1" {...props} />,
+                  li: ({node, ...props}) => <li className="text-gray-700" {...props} />,
+                  strong: ({node, ...props}) => <strong className="font-bold text-gray-900" {...props} />,
+                  code: ({node, inline, ...props}) =>
+                    inline ?
+                      <code className="bg-gray-100 px-1.5 py-0.5 rounded text-sm font-mono text-blue-600" {...props} /> :
+                      <code className="block bg-gray-800 text-white p-3 rounded my-2 text-sm font-mono overflow-x-auto" {...props} />,
+                }}
+              >
+                {response.answer}
+              </ReactMarkdown>
             </div>
 
             {/* Metadata */}
@@ -493,7 +513,24 @@ function PortfolioIntelligence() {
                   <p className="text-xs font-semibold text-gray-500 mb-1">
                     {msg.role === 'user' ? '👤 You' : '🤖 AI Assistant'}
                   </p>
-                  <p className="text-sm text-gray-700">{msg.content}</p>
+                  {msg.role === 'user' ? (
+                    <p className="text-sm text-gray-700">{msg.content}</p>
+                  ) : (
+                    <div className="prose prose-sm max-w-none text-sm">
+                      <ReactMarkdown
+                        remarkPlugins={[remarkGfm]}
+                        components={{
+                          h2: ({node, ...props}) => <h2 className="text-base font-bold mb-1 mt-2 text-gray-800" {...props} />,
+                          p: ({node, ...props}) => <p className="mb-2 text-gray-700" {...props} />,
+                          ul: ({node, ...props}) => <ul className="list-disc ml-4 mb-2 space-y-0.5" {...props} />,
+                          li: ({node, ...props}) => <li className="text-gray-700 text-sm" {...props} />,
+                          strong: ({node, ...props}) => <strong className="font-bold text-gray-900" {...props} />,
+                        }}
+                      >
+                        {msg.content}
+                      </ReactMarkdown>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>

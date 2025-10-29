@@ -1,188 +1,108 @@
-import React, { useState, useEffect } from 'react';
-import AgentStatusBar from '../components/AgentStatusBar';
-import PortfolioSummaryCard from '../components/PortfolioSummaryCard';
+import React, { useState } from 'react';
 import ChatMessages from '../components/ChatMessages';
 import ChatInput from '../components/ChatInput';
-import QuerySuggestions from '../components/QuerySuggestions';
-import { Activity } from 'lucide-react';
+import { BookOpen, Sparkles } from 'lucide-react';
+import { ragQuery } from '../services/api';
 
 const ChatPage = () => {
-  const [selectedClient, setSelectedClient] = useState('CLT-001');
   const [messages, setMessages] = useState([]);
-  const [agentStatuses, setAgentStatuses] = useState({});
-  const [sessionId, setSessionId] = useState(null);
-  const [ws, setWs] = useState(null);
-
-  // Initialize session
-  useEffect(() => {
-    initializeSession();
-    return () => {
-      if (ws) {
-        ws.close();
-      }
-    };
-  }, [selectedClient]);
-
-  const initializeSession = async () => {
-    try {
-      const response = await fetch('http://localhost:8000/api/sessions', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ client_id: selectedClient })
-      });
-      const data = await response.json();
-      setSessionId(data.session_id);
-
-      // Connect WebSocket for real-time updates
-      connectWebSocket(data.session_id);
-    } catch (error) {
-      console.error('Error initializing session:', error);
-    }
-  };
-
-  const connectWebSocket = (sessionId) => {
-    const websocket = new WebSocket(`ws://localhost:8000/ws/${sessionId}`);
-
-    websocket.onopen = () => {
-      console.log('WebSocket connected');
-    };
-
-    websocket.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      if (data.type === 'agent_status') {
-        setAgentStatuses(prev => ({
-          ...prev,
-          [data.agent]: data.status
-        }));
-      }
-    };
-
-    websocket.onerror = (error) => {
-      console.error('WebSocket error:', error);
-    };
-
-    websocket.onclose = () => {
-      console.log('WebSocket closed');
-    };
-
-    setWs(websocket);
-  };
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleQuery = async (query) => {
     // Add user message immediately
     setMessages(prev => [...prev, { role: 'user', content: query }]);
-
-    // Reset agent statuses
-    setAgentStatuses({
-      planner: 'working',
-      portfolio: 'idle',
-      market: 'idle',
-      collaboration: 'idle',
-      validator: 'idle'
-    });
+    setIsLoading(true);
 
     try {
-      const response = await fetch('http://localhost:8000/api/query', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          client_id: selectedClient,
-          query: query
-        })
-      });
-
-      const result = await response.json();
-
-      // Add assistant message
+      const ragRes = await ragQuery(query, 4);
       setMessages(prev => [...prev, {
         role: 'assistant',
-        content: result.answer,
-        visualizationData: result.visualization_data
+        content: ragRes.answer || 'No answer found.',
+        sources: ragRes.sources
       }]);
-
-      // Update final agent statuses
-      setAgentStatuses({
-        planner: 'complete',
-        portfolio: result.agents_used?.includes('portfolio_agent') ? 'complete' : 'idle',
-        market: result.agents_used?.includes('market_agent') ? 'complete' : 'idle',
-        collaboration: result.agents_used?.includes('collaboration_agent') ? 'complete' : 'idle',
-        validator: 'complete'
-      });
-
     } catch (error) {
-      console.error('Error processing query:', error);
+      console.error('Error querying RAG:', error);
       setMessages(prev => [...prev, {
         role: 'assistant',
-        content: 'Sorry, an error occurred while processing your query.'
+        content: 'Sorry, an error occurred while processing your question about stock markets.'
       }]);
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const clients = ['CLT-001', 'CLT-002', 'CLT-003', 'CLT-004', 'CLT-005',
-                   'CLT-007', 'CLT-009', 'CLT-010'];
+  const suggestions = [
+    "What is a P/E ratio?",
+    "Explain the difference between stocks and bonds",
+    "What are the main types of stocks?",
+    "How does the stock market work?",
+    "What is market capitalization?",
+    "Explain dividend yields"
+  ];
 
   return (
-    <div className="h-screen flex flex-col bg-gray-50">
+    <div className="h-screen flex flex-col bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
       {/* Header */}
-      <header className="bg-white shadow-sm p-4">
-        <div className="flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-gray-800">
-            📊 Portfolio Intelligence
-          </h1>
-          <select
-            value={selectedClient}
-            onChange={(e) => setSelectedClient(e.target.value)}
-            className="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            {clients.map(client => (
-              <option key={client} value={client}>{client}</option>
-            ))}
-          </select>
+      <header className="bg-white shadow-md p-6 border-b-4 border-gradient-to-r from-blue-500 to-purple-500">
+        <div className="max-w-6xl mx-auto">
+          <div className="flex items-center gap-3">
+            <BookOpen className="w-8 h-8 text-blue-600" />
+            <div>
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                Stock Market Knowledge Assistant
+              </h1>
+              <p className="text-gray-600 text-sm mt-1">Ask me anything about stocks, trading, and market concepts</p>
+            </div>
+          </div>
         </div>
       </header>
 
-      {/* Main Content - Split Panel */}
-      <div className="flex-1 grid grid-cols-3 gap-6 p-6 overflow-hidden">
+      {/* Main Content */}
+      <div className="flex-1 overflow-hidden max-w-6xl mx-auto w-full p-6">
+        <div className="h-full flex flex-col space-y-4">
 
-        {/* LEFT: Chat Area (2/3 width) */}
-        <div className="col-span-2 flex flex-col space-y-4">
-          <AgentStatusBar agentStatuses={agentStatuses} />
+          {/* Suggestion Pills */}
+          {messages.length === 0 && (
+            <div className="bg-white rounded-2xl shadow-lg p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <Sparkles className="w-5 h-5 text-purple-600" />
+                <h2 className="text-lg font-semibold text-gray-800">Quick Questions</h2>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {suggestions.map((suggestion, index) => (
+                  <button
+                    key={index}
+                    onClick={() => handleQuery(suggestion)}
+                    className="px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-full text-sm font-medium hover:shadow-lg transform hover:scale-105 transition-all duration-200"
+                  >
+                    {suggestion}
+                  </button>
+                ))}
+              </div>
 
-          <QuerySuggestions
-            clientId={selectedClient}
-            onSelect={handleQuery}
-          />
+              <div className="mt-6 p-4 bg-blue-50 rounded-xl border border-blue-200">
+                <p className="text-sm text-gray-700">
+                  💡 <strong>Tip:</strong> This assistant uses RAG (Retrieval-Augmented Generation) to provide accurate answers about stock market concepts from our knowledge base.
+                </p>
+              </div>
+            </div>
+          )}
 
-          <div className="flex-1 overflow-hidden">
+          {/* Chat Messages */}
+          <div className="flex-1 overflow-hidden bg-white rounded-2xl shadow-lg">
             <ChatMessages messages={messages} />
           </div>
 
-          <ChatInput onSubmit={handleQuery} />
-        </div>
-
-        {/* RIGHT: Context Panel (1/3 width) */}
-        <div className="col-span-1 overflow-y-auto space-y-4">
-          <PortfolioSummaryCard clientId={selectedClient} />
-
-          {/* Recent Activity Card */}
-          <div className="bg-white rounded-lg shadow">
-            <div className="p-4 border-b">
-              <h3 className="text-lg font-semibold flex items-center gap-2">
-                <Activity className="w-5 h-5" />
-                Recent Activity
-              </h3>
+          {/* Loading Indicator */}
+          {isLoading && (
+            <div className="flex items-center justify-center gap-2 text-blue-600">
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+              <span className="text-sm font-medium">Searching knowledge base...</span>
             </div>
-            <div className="p-4">
-              <div className="text-sm text-gray-600">
-                {messages.length} messages in this session
-              </div>
-              {sessionId && (
-                <div className="text-xs text-gray-500 mt-2">
-                  Session ID: {sessionId.substring(0, 8)}...
-                </div>
-              )}
-            </div>
-          </div>
+          )}
+
+          {/* Chat Input */}
+          <ChatInput onSubmit={handleQuery} placeholder="Ask about stocks, P/E ratios, bonds, market concepts..." />
         </div>
       </div>
     </div>

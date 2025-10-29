@@ -32,7 +32,7 @@ function StockAnalysis() {
 
     try {
       // Call the AutoGen 6-agent workflow API
-      const response = await axios.post('http://localhost:8001/api/stock-analysis', {
+      const response = await axios.post('http://localhost:8000/api/analyze-stock', {
         symbol: selectedCompany.symbol,
         question: selectedQuestion.text,
         portfolio_value: 100000.0,
@@ -391,8 +391,37 @@ function StockAnalysis() {
                           <span className="mr-2">🎯</span>
                           Execution Plan
                         </h3>
-                        <div className="text-blue-800 whitespace-pre-wrap">
-                          {result.execution_plan}
+                        <div className="text-blue-800">
+                          {typeof result.execution_plan === 'string' ? (
+                            <div className="whitespace-pre-wrap">{result.execution_plan}</div>
+                          ) : (
+                            <div className="space-y-2">
+                              {result.execution_plan.entry_price && (
+                                <div className="flex justify-between items-center p-2 bg-white rounded">
+                                  <span className="font-semibold">Entry Price:</span>
+                                  <span className="text-lg">${result.execution_plan.entry_price}</span>
+                                </div>
+                              )}
+                              {result.execution_plan.stop_loss && (
+                                <div className="flex justify-between items-center p-2 bg-white rounded">
+                                  <span className="font-semibold">Stop Loss:</span>
+                                  <span className="text-lg text-red-600">${result.execution_plan.stop_loss}</span>
+                                </div>
+                              )}
+                              {result.execution_plan.target_price && (
+                                <div className="flex justify-between items-center p-2 bg-white rounded">
+                                  <span className="font-semibold">Target Price:</span>
+                                  <span className="text-lg text-green-600">${result.execution_plan.target_price}</span>
+                                </div>
+                              )}
+                              {result.execution_plan.timeline && (
+                                <div className="flex justify-between items-center p-2 bg-white rounded">
+                                  <span className="font-semibold">Timeline:</span>
+                                  <span className="text-lg">{result.execution_plan.timeline}</span>
+                                </div>
+                              )}
+                            </div>
+                          )}
                         </div>
                       </div>
                     )}

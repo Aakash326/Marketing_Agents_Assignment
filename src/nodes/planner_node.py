@@ -24,12 +24,16 @@ def planner_node(state: Dict) -> Dict:
     history_context = ""
     if conversation_history and len(conversation_history) > 0:
         history_context = "\n\nPrevious Conversation (for context):\n"
-        # Show last 3 interactions
-        for msg in conversation_history[-3:]:
+        # Show last 4 interactions (8 messages: 4 user + 4 assistant)
+        for msg in conversation_history[-8:]:
             role = msg.get("role", "").capitalize()
-            content = msg.get("content", "")[:200]  # Truncate long messages
-            history_context += f"{role}: {content}...\n"
-        history_context += "\nIMPORTANT: Consider this history when interpreting the current query. User may reference previous responses (e.g., 'the first one', 'that stock', 'tell me more').\n"
+            content = msg.get("content", "")[:300]  # Show more context
+            history_context += f"{role}: {content}\n"
+        history_context += "\nCRITICAL: The current query may be a follow-up response. Check if:\n"
+        history_context += "- User says 'yes', 'no', 'sure', 'okay' → They're answering a question from previous response\n"
+        history_context += "- User says 'tell me more', 'what about', 'and' → They want more info about the previous topic\n"
+        history_context += "- User mentions 'that', 'it', 'the first one', 'the second stock' → They're referencing previous response\n"
+        history_context += "- If unclear what they're referring to, use the assistant's LAST response as the main context\n"
 
     # Create planning prompt
     planning_prompt = f"""You are a planning agent for a portfolio and market intelligence system.
@@ -38,6 +42,12 @@ User Query: "{query}"
 Client ID: {client_id}
 {history_context}
 
+STEP 1: INTERPRET THE QUERY WITH CONTEXT
+- If the query is very short ("yes", "no", "sure", "tell me more", "what about it"), look at the previous assistant response
+- Extract what the user is actually asking about from the conversation history
+- Combine the current query with the context to understand the FULL intent
+
+STEP 2: ANALYZE DATA NEEDS
 Analyze this query and determine:
 1. Does this query require portfolio data analysis? (Information about client's holdings, stocks they own, portfolio value, etc.)
 2. Does this query require market data analysis? (Real-time stock prices, news, market performance, current valuations, etc.)
@@ -47,7 +57,8 @@ Consider these guidelines:
 - Queries about "what stocks do I own", "my holdings", "what do I have" → Portfolio data ONLY, NO advice
 - Queries about "total value", "portfolio value", "total worth", "how much", "value I hold" → Portfolio data ONLY, NO advice
 - Queries about "risk profile", "how risky", "diversified", "diversity", "allocation" → Portfolio data ONLY, NO advice
-- Queries about "price of [stock]" or "how is [stock] doing" → Market data ONLY, NO advice
+- Queries about "price of [stock]" or "how is [stock] doing" (without "my") → Market data ONLY, NO advice
+- Queries about "my market", "my stocks", "about my market" → BOTH portfolio and market data, NO advice (analyze user's holdings)
 - Queries about "my [stock] holdings" or "[stock] in my portfolio" → BOTH portfolio and market data, NO advice
 - Queries about portfolio performance, gains, losses, or returns → BOTH portfolio and market data, NO advice
 - Queries asking "highest return", "best performer", "worst performer" → BOTH portfolio and market data, NO advice
@@ -63,6 +74,8 @@ IMPORTANT CONTEXT UNDERSTANDING:
 IMPORTANT: Most queries just want information. Only set "Wants Recommendations" to YES if the user explicitly asks for advice or suggestions.
 
 Respond with your analysis and clear decisions in this format:
+Context Interpretation: [What is the user actually asking about, considering conversation history?]
+Full Intent: [The complete question when combining current query + history context]
 Analysis: [Your reasoning]
 Portfolio Data Needed: [YES or NO]
 Market Data Needed: [YES or NO]
@@ -96,8 +109,8 @@ Wants Recommendations: [YES or NO]
         market_keywords = ["price", "market", "news", "performance", "trading", "how is", "doing", "return", "gain", "loss", "profit"]
         needs_market = any(keyword in query_lower for keyword in market_keywords)
 
-        # If query mentions a specific stock and portfolio, need both
-        if "my" in query_lower and any(word in query_lower for word in ["stock", "holding"]):
+        # If query mentions "my" with market/stock keywords, need both portfolio and market
+        if "my" in query_lower and any(word in query_lower for word in ["stock", "holding", "market", "portfolio"]):
             needs_portfolio = True
             needs_market = True
 
