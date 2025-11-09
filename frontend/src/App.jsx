@@ -7,6 +7,7 @@ import PortfolioIntelligence from './pages/PortfolioIntelligence';
 import StockAnalysis from './pages/StockAnalysis';
 import ChatPage from './pages/ChatPage';
 import SystemDesignPresentation from './pages/SystemDesignPresentation';
+import StockPredictor from './pages/StockPredictor';
 import './App.css';
 
 function Navigation() {
@@ -16,6 +17,7 @@ function Navigation() {
     { path: '/', label: 'Home', icon: '🏠' },
     { path: '/portfolio', label: 'Portfolio Intelligence', icon: '📊' },
     { path: '/stock-analysis', label: 'Stock Analysis', icon: '📈' },
+    { path: '/stock-predictor', label: 'Stock Predictor', icon: '🎯' },
     { path: '/chat', label: 'Enhanced Chat', icon: '💬' },
     { path: '/presentation', label: 'System Design', icon: '📊' }
   ];
@@ -92,6 +94,7 @@ function App() {
               <Route path="/" element={<Home />} />
               <Route path="/portfolio" element={<PortfolioIntelligence />} />
               <Route path="/stock-analysis" element={<StockAnalysis />} />
+              <Route path="/stock-predictor" element={<StockPredictor />} />
               <Route path="/chat" element={<ChatPage />} />
               <Route path="/presentation" element={<SystemDesignPresentation />} />
             </Routes>
