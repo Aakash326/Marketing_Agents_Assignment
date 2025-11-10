@@ -68,8 +68,11 @@ IMPORTANT CONTEXT UNDERSTANDING:
 - "total value" means total portfolio value (sum of all holdings)
 - "value I hold" means total portfolio value
 - "how much do I have" means total portfolio value
-- Ignore common English words like "DO", "OWN", "HOLD", "TOTAL" as ticker symbols - these refer to portfolio questions
+- Ignore common English words like "DO", "OWN", "HOLD", "TOTAL", "BUY", "SELL" as ticker symbols - these are action verbs, not stock symbols
 - If query mentions "my" or "I" - it's about the CLIENT'S portfolio, not searching for stocks
+- "Should I buy AAPL?" → This is asking about AAPL stock, NOT about a stock ticker called "BUY"
+- "Which stock should I buy?" → This is asking for stock recommendations
+- Stock ticker symbols are 1-5 uppercase letters (AAPL, MSFT, TSLA, etc.), not action verbs like BUY/SELL
 
 IMPORTANT: Most queries just want information. Only set "Wants Recommendations" to YES if the user explicitly asks for advice or suggestions.
 
@@ -106,7 +109,7 @@ Wants Recommendations: [YES or NO]
         needs_portfolio = any(keyword in query_lower for keyword in portfolio_keywords)
 
         # Market indicators
-        market_keywords = ["price", "market", "news", "performance", "trading", "how is", "doing", "return", "gain", "loss", "profit"]
+        market_keywords = ["price", "market", "news", "performance", "trading", "how is", "doing", "return", "gain", "loss", "profit", "which stock", "what stock", "stock recommendation", "should i buy", "should i sell"]
         needs_market = any(keyword in query_lower for keyword in market_keywords)
 
         # If query mentions "my" with market/stock keywords, need both portfolio and market
@@ -124,7 +127,7 @@ Wants Recommendations: [YES or NO]
         query_lower = query.lower()
         advice_keywords = ["how to improve", "what should i do", "recommendations", "suggestions",
                           "advice", "how can i", "should i buy", "should i sell", "optimize",
-                          "rebalance", "diversify"]
+                          "rebalance", "diversify", "which stock", "what stock", "recommend"]
         wants_recommendations = any(keyword in query_lower for keyword in advice_keywords)
 
     return {

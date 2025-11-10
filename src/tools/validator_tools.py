@@ -314,7 +314,7 @@ def enhanced_fact_check(
         "RETURN", "RETURNS", "GAIN", "GAINS", "LOSS", "LOSSES", "VALUE", "VALUES",
         "TOTAL", "HOLD", "HOLDING", "WORTH", "PORTFOLIO", "PORTFOLIOS",
         "RISK", "RISKS", "PROFILE", "DIVERSITY", "DIVERSIFIED", "ALLOCATION",
-        "CLT", "CLASS"
+        "CLT", "CLASS", "BUY", "SELL", "TRADE", "SHOULD", "WOULD", "COULD"
     }
     unknown_tickers = mentioned_tickers - known_tickers - common_words
 
@@ -434,8 +434,11 @@ def check_data_sufficiency(
         "RETURN", "RETURNS", "GAIN", "GAINS", "LOSS", "LOSSES", "VALUE", "VALUES",
         "TOTAL", "HOLD", "HOLDING", "WORTH", "PORTFOLIO", "PORTFOLIOS",
         "RISK", "RISKS", "PROFILE", "DIVERSITY", "DIVERSIFIED", "ALLOCATION",
-        "CLT", "CLASS"
+        "CLT", "CLASS", "BUY", "SELL", "TRADE", "SHOULD", "WOULD", "COULD"
     }
+
+    # Filter out common words first
+    mentioned_tickers = mentioned_tickers - common_words
 
     if mentioned_tickers:
         # Check if we have data for this ticker
@@ -450,7 +453,7 @@ def check_data_sufficiency(
         known_tickers = portfolio_tickers | market_tickers
 
         for ticker in mentioned_tickers:
-            if ticker not in known_tickers and ticker not in common_words:
+            if ticker not in known_tickers:
                 if "portfolio" in query_lower or "my" in query_lower:
                     return (False, f"Your portfolio doesn't contain {ticker}. Did you mean a different stock?")
                 else:

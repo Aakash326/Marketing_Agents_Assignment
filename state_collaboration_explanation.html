@@ -1,0 +1,1228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>State Management & Collaboration Node Explained</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .section {
+            margin-bottom: 50px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .section h2 {
+            color: #764ba2;
+            font-size: 2em;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #667eea;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .section h3 {
+            color: #764ba2;
+            font-size: 1.5em;
+            margin: 25px 0 15px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .icon {
+            font-size: 1.5em;
+        }
+
+        .state-diagram {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            margin: 20px 0;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .state-field {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 10px;
+            position: relative;
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+        }
+
+        .state-field:hover {
+            transform: translateX(10px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .state-field h4 {
+            font-size: 1.3em;
+            margin-bottom: 10px;
+        }
+
+        .state-field p {
+            opacity: 0.95;
+            font-size: 1em;
+        }
+
+        .state-field .type-badge {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.3);
+            padding: 5px 15px;
+            border-radius: 15px;
+            font-size: 0.85em;
+            margin-top: 10px;
+        }
+
+        .workflow-diagram {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            margin: 20px 0;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .flow-step {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 10px;
+            position: relative;
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+        }
+
+        .flow-step:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(245, 87, 108, 0.4);
+        }
+
+        .flow-step::after {
+            content: '↓';
+            position: absolute;
+            bottom: -35px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 2em;
+            color: #667eea;
+        }
+
+        .flow-step:last-child::after {
+            content: '';
+        }
+
+        .flow-step h4 {
+            font-size: 1.3em;
+            margin-bottom: 10px;
+        }
+
+        .flow-step p {
+            opacity: 0.95;
+            font-size: 1em;
+        }
+
+        .code-block {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            line-height: 1.5;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .code-comment {
+            color: #6272a4;
+        }
+
+        .code-keyword {
+            color: #ff79c6;
+        }
+
+        .code-function {
+            color: #50fa7b;
+        }
+
+        .code-string {
+            color: #f1fa8c;
+        }
+
+        .code-number {
+            color: #bd93f9;
+        }
+
+        .example-box {
+            background: white;
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+
+        .example-box h4 {
+            color: #764ba2;
+            margin-bottom: 10px;
+            font-size: 1.2em;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .feature-card {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+
+        .feature-card h4 {
+            color: #764ba2;
+            font-size: 1.3em;
+            margin-bottom: 10px;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: bold;
+            margin: 5px;
+        }
+
+        .badge-input {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .badge-data {
+            background: #10b981;
+            color: white;
+        }
+
+        .badge-planning {
+            background: #f59e0b;
+            color: white;
+        }
+
+        .badge-collab {
+            background: #8b5cf6;
+            color: white;
+        }
+
+        .badge-session {
+            background: #06b6d4;
+            color: white;
+        }
+
+        .badge-validation {
+            background: #ef4444;
+            color: white;
+        }
+
+        .badge-output {
+            background: #ec4899;
+            color: white;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: bold;
+        }
+
+        td {
+            padding: 15px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        tr:hover {
+            background: #f3f4f6;
+        }
+
+        .data-flow {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            margin: 20px 0;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .data-box {
+            background: #f3f4f6;
+            border: 2px dashed #667eea;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+
+        footer {
+            background: #1f2937;
+            color: white;
+            text-align: center;
+            padding: 30px;
+            margin-top: 50px;
+        }
+
+        .highlight {
+            background: #fef3c7;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-weight: bold;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .section {
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        .comparison-box {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 15px 0;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .comparison-box h4 {
+            color: #764ba2;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .state-lifecycle {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .lifecycle-stage {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            transition: transform 0.3s;
+        }
+
+        .lifecycle-stage:hover {
+            transform: scale(1.05);
+        }
+
+        .lifecycle-stage h5 {
+            color: #1f2937;
+            font-size: 1.1em;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🧠 State Management & Collaboration Node</h1>
+            <p>Understanding the Data Flow & Multi-Agent Synthesis</p>
+        </header>
+
+        <div class="content">
+            <!-- STATE OVERVIEW -->
+            <div class="section">
+                <h2><span class="icon">📊</span> What is Graph State?</h2>
+                <p><strong>Graph State</strong> is the <span class="highlight">shared memory</span> that flows through every node in the LangGraph workflow. Think of it as a <strong>shared clipboard</strong> that each agent can read from and write to.</p>
+
+                <div class="example-box">
+                    <h4>💡 Real-World Analogy</h4>
+                    <p>Imagine a relay race where runners pass a baton. The <strong>baton is the state</strong> - it carries information from one runner (node) to the next. Each runner adds their findings to the baton before passing it on.</p>
+                </div>
+
+                <h3>🔄 State Lifecycle</h3>
+                <div class="state-lifecycle">
+                    <div class="lifecycle-stage">
+                        <h5>1️⃣ Initialize</h5>
+                        <p>User query arrives, state created with query + client_id</p>
+                    </div>
+                    <div class="lifecycle-stage">
+                        <h5>2️⃣ Plan</h5>
+                        <p>Planner adds: needs_portfolio, needs_market flags</p>
+                    </div>
+                    <div class="lifecycle-stage">
+                        <h5>3️⃣ Gather Data</h5>
+                        <p>Agents add: portfolio_data, market_data</p>
+                    </div>
+                    <div class="lifecycle-stage">
+                        <h5>4️⃣ Collaborate</h5>
+                        <p>Collaboration node synthesizes findings</p>
+                    </div>
+                    <div class="lifecycle-stage">
+                        <h5>5️⃣ Validate</h5>
+                        <p>Validator checks response quality</p>
+                    </div>
+                    <div class="lifecycle-stage">
+                        <h5>6️⃣ Return</h5>
+                        <p>Final response sent to user</p>
+                    </div>
+                </div>
+
+                <h3>📋 Complete State Schema</h3>
+                <p>Here's every field in the GraphState TypedDict:</p>
+
+                <div class="code-block">
+<span class="code-keyword">from</span> typing <span class="code-keyword">import</span> TypedDict, Optional, List, Dict
+
+<span class="code-keyword">class</span> <span class="code-function">GraphState</span>(TypedDict):
+    <span class="code-comment"># 🔵 USER INPUTS (Initial state)</span>
+    query: <span class="code-keyword">str</span>                    <span class="code-comment"># User's question</span>
+    client_id: <span class="code-keyword">str</span>                <span class="code-comment"># Client identifier (e.g., "CLT-001")</span>
+    
+    <span class="code-comment"># 🟢 DATA COLLECTED BY AGENTS</span>
+    portfolio_data: Optional[dict]  <span class="code-comment"># Holdings from Portfolio Agent</span>
+    market_data: Optional[dict]     <span class="code-comment"># Prices/news from Market Agent</span>
+    
+    <span class="code-comment"># 🟡 PLANNING & ROUTING (Planner Node)</span>
+    plan: <span class="code-keyword">str</span>                     <span class="code-comment"># Explanation of strategy</span>
+    needs_portfolio: <span class="code-keyword">bool</span>         <span class="code-comment"># Should Portfolio Agent run?</span>
+    needs_market: <span class="code-keyword">bool</span>            <span class="code-comment"># Should Market Agent run?</span>
+    wants_recommendations: <span class="code-keyword">bool</span>   <span class="code-comment"># Advisory mode requested?</span>
+    
+    <span class="code-comment"># 🟣 COLLABORATION (Synthesis)</span>
+    collaboration_findings: Optional[dict]  <span class="code-comment"># Cross-agent synthesis</span>
+    
+    <span class="code-comment"># 🔵 SESSION MANAGEMENT (Memory)</span>
+    conversation_history: List[Dict[<span class="code-keyword">str</span>, <span class="code-keyword">str</span>]]  <span class="code-comment"># Previous Q&A</span>
+    
+    <span class="code-comment"># 🔴 VALIDATION (Quality Control)</span>
+    needs_clarification: <span class="code-keyword">bool</span>     <span class="code-comment"># Is query ambiguous?</span>
+    clarification_message: <span class="code-keyword">str</span>    <span class="code-comment"># Question for user</span>
+    validated: <span class="code-keyword">bool</span>               <span class="code-comment"># Response passed checks?</span>
+    
+    <span class="code-comment"># 🟠 FINAL OUTPUT</span>
+    response: <span class="code-keyword">str</span>                 <span class="code-comment"># Generated answer</span>
+    messages: list                  <span class="code-comment"># Full message history</span>
+                </div>
+            </div>
+
+            <!-- STATE FIELDS DETAILED -->
+            <div class="section">
+                <h2><span class="icon">🔍</span> State Fields Explained (by Category)</h2>
+
+                <h3>🔵 1. User Input Fields</h3>
+                <div class="state-diagram">
+                    <div class="state-field" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);">
+                        <h4>query: str</h4>
+                        <p><strong>Purpose:</strong> The user's question or request</p>
+                        <p><strong>Example:</strong> "What stocks do I own and how are they performing?"</p>
+                        <p><strong>Set By:</strong> Initial workflow invocation</p>
+                        <p><strong>Used By:</strong> All nodes (planning, data gathering, response generation)</p>
+                        <span class="type-badge">Required | String</span>
+                    </div>
+
+                    <div class="state-field" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);">
+                        <h4>client_id: str</h4>
+                        <p><strong>Purpose:</strong> Identifies which client's portfolio to load</p>
+                        <p><strong>Example:</strong> "CLT-001", "CLT-002", etc.</p>
+                        <p><strong>Set By:</strong> Initial workflow invocation (from API request)</p>
+                        <p><strong>Used By:</strong> Portfolio Agent (to load correct Excel data)</p>
+                        <span class="type-badge">Required | String</span>
+                    </div>
+                </div>
+
+                <h3>🟢 2. Data Collection Fields</h3>
+                <div class="state-diagram">
+                    <div class="state-field" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+                        <h4>portfolio_data: Optional[dict]</h4>
+                        <p><strong>Purpose:</strong> Stores all portfolio holdings loaded from Excel</p>
+                        <p><strong>Structure:</strong></p>
+                        <div class="data-box">
+{
+    "client_id": "CLT-001",
+    "holdings": [
+        {
+            "symbol": "AAPL",
+            "quantity": 50,
+            "purchase_price": 150.25,
+            "security_name": "Apple Inc.",
+            "asset_class": "Stock",
+            "sector": "Technology"
+        },
+        ...
+    ],
+    "total_holdings": 5
+}
+                        </div>
+                        <p><strong>Set By:</strong> Portfolio Agent (portfolio_node.py)</p>
+                        <p><strong>Used By:</strong> Collaboration Node, Response generators</p>
+                        <span class="type-badge">Optional | Dictionary</span>
+                    </div>
+
+                    <div class="state-field" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+                        <h4>market_data: Optional[dict]</h4>
+                        <p><strong>Purpose:</strong> Stores real-time market prices and news</p>
+                        <p><strong>Structure:</strong></p>
+                        <div class="data-box">
+{
+    "AAPL": {
+        "current_price": 178.72,
+        "day_change": 2.30,
+        "day_change_pct": 1.30,
+        "ytd_return": 45.67,
+        "sector": "Technology"
+    },
+    "TSLA": {
+        "current_price": 242.84,
+        ...
+    }
+}
+                        </div>
+                        <p><strong>Set By:</strong> Market Agent (market_node.py)</p>
+                        <p><strong>Used By:</strong> Collaboration Node (for return calculations)</p>
+                        <span class="type-badge">Optional | Dictionary</span>
+                    </div>
+                </div>
+
+                <h3>🟡 3. Planning & Routing Fields</h3>
+                <div class="state-diagram">
+                    <div class="state-field" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
+                        <h4>plan: str</h4>
+                        <p><strong>Purpose:</strong> Planner's explanation of the strategy</p>
+                        <p><strong>Example:</strong> "This query requires portfolio data to list holdings and market data to show current prices."</p>
+                        <p><strong>Set By:</strong> Planner Node</p>
+                        <p><strong>Used By:</strong> Logging, debugging, workflow visualization</p>
+                        <span class="type-badge">String</span>
+                    </div>
+
+                    <div class="state-field" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
+                        <h4>needs_portfolio: bool</h4>
+                        <p><strong>Purpose:</strong> Flag to activate Portfolio Agent</p>
+                        <p><strong>True When:</strong> Query mentions "my stocks", "my holdings", "portfolio", etc.</p>
+                        <p><strong>Set By:</strong> Planner Node (query classification)</p>
+                        <p><strong>Used By:</strong> Workflow routing (conditional edges)</p>
+                        <span class="type-badge">Boolean</span>
+                    </div>
+
+                    <div class="state-field" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
+                        <h4>needs_market: bool</h4>
+                        <p><strong>Purpose:</strong> Flag to activate Market Agent</p>
+                        <p><strong>True When:</strong> Query asks about prices, performance, news</p>
+                        <p><strong>Set By:</strong> Planner Node</p>
+                        <p><strong>Used By:</strong> Workflow routing</p>
+                        <span class="type-badge">Boolean</span>
+                    </div>
+
+                    <div class="state-field" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
+                        <h4>wants_recommendations: bool</h4>
+                        <p><strong>Purpose:</strong> Determines if user wants investment advice</p>
+                        <p><strong>True When:</strong> Query explicitly asks "should I", "recommend", "what to do"</p>
+                        <p><strong>Set By:</strong> Planner Node</p>
+                        <p><strong>Used By:</strong> All agents (switches between Info vs Advisory mode)</p>
+                        <span class="type-badge">Boolean | Critical</span>
+                    </div>
+                </div>
+
+                <h3>🟣 4. Collaboration Fields</h3>
+                <div class="state-diagram">
+                    <div class="state-field" style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);">
+                        <h4>collaboration_findings: Optional[dict]</h4>
+                        <p><strong>Purpose:</strong> Stores synthesis results from Collaboration Node</p>
+                        <p><strong>Structure:</strong></p>
+                        <div class="data-box">
+{
+    "synthesized": True,
+    "portfolio_holdings_analyzed": 5,
+    "market_data_points": 5,
+    "synthesis": "Combined analysis: Your 5 holdings gained..."
+}
+                        </div>
+                        <p><strong>Set By:</strong> Collaboration Node</p>
+                        <p><strong>Used By:</strong> Final response, analytics tracking</p>
+                        <span class="type-badge">Optional | Dictionary</span>
+                    </div>
+                </div>
+
+                <h3>🔵 5. Session Management Fields</h3>
+                <div class="state-diagram">
+                    <div class="state-field" style="background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);">
+                        <h4>conversation_history: List[Dict[str, str]]</h4>
+                        <p><strong>Purpose:</strong> Maintains chat context for follow-up questions</p>
+                        <p><strong>Structure:</strong></p>
+                        <div class="data-box">
+[
+    {
+        "role": "user",
+        "content": "What stocks do I own?"
+    },
+    {
+        "role": "assistant",
+        "content": "You own: AAPL, TSLA, MSFT..."
+    },
+    {
+        "role": "user",
+        "content": "Which one performed best?"  ← Can reference "one"
+    }
+]
+                        </div>
+                        <p><strong>Set By:</strong> Workflow manager (after each turn)</p>
+                        <p><strong>Used By:</strong> All agents (context for ambiguous references)</p>
+                        <span class="type-badge">List of Dicts</span>
+                    </div>
+                </div>
+
+                <h3>🔴 6. Validation Fields</h3>
+                <div class="state-diagram">
+                    <div class="state-field" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);">
+                        <h4>needs_clarification: bool</h4>
+                        <p><strong>Purpose:</strong> Flags when query is too ambiguous</p>
+                        <p><strong>True When:</strong> Query like "Tell me about it" with no context</p>
+                        <p><strong>Set By:</strong> Validator Node</p>
+                        <p><strong>Used By:</strong> Workflow routing (return clarification prompt to user)</p>
+                        <span class="type-badge">Boolean</span>
+                    </div>
+
+                    <div class="state-field" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);">
+                        <h4>clarification_message: str</h4>
+                        <p><strong>Purpose:</strong> Question to ask user when query is unclear</p>
+                        <p><strong>Example:</strong> "Which stock are you asking about?"</p>
+                        <p><strong>Set By:</strong> Validator Node</p>
+                        <p><strong>Used By:</strong> Frontend (displays to user)</p>
+                        <span class="type-badge">String</span>
+                    </div>
+
+                    <div class="state-field" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);">
+                        <h4>validated: bool</h4>
+                        <p><strong>Purpose:</strong> Indicates if response passed quality checks</p>
+                        <p><strong>True When:</strong> No hallucinations, proper disclaimers, accurate data</p>
+                        <p><strong>Set By:</strong> Validator Node</p>
+                        <p><strong>Used By:</strong> Workflow completion check</p>
+                        <span class="type-badge">Boolean</span>
+                    </div>
+                </div>
+
+                <h3>🟠 7. Output Fields</h3>
+                <div class="state-diagram">
+                    <div class="state-field" style="background: linear-gradient(135deg, #ec4899 0%, #db2777 100%);">
+                        <h4>response: str</h4>
+                        <p><strong>Purpose:</strong> The final answer sent to the user</p>
+                        <p><strong>Set By:</strong> Portfolio/Market/Collaboration Nodes (modified through pipeline)</p>
+                        <p><strong>Used By:</strong> Validator (checks quality), Frontend (displays to user)</p>
+                        <span class="type-badge">String | Final Output</span>
+                    </div>
+
+                    <div class="state-field" style="background: linear-gradient(135deg, #ec4899 0%, #db2777 100%);">
+                        <h4>messages: list</h4>
+                        <p><strong>Purpose:</strong> Complete message thread (LangChain format)</p>
+                        <p><strong>Used By:</strong> LangChain message history, debugging</p>
+                        <span class="type-badge">List</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STATE FLOW -->
+            <div class="section">
+                <h2><span class="icon">🔄</span> How State Flows Through Nodes</h2>
+
+                <h3>📊 State Evolution Example</h3>
+                <p>Let's trace how state changes for the query: <strong>"What stocks do I own and how did they perform today?"</strong></p>
+
+                <div class="workflow-diagram">
+                    <div class="flow-step" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);">
+                        <h4>Initial State (User Input)</h4>
+                        <div class="data-box">
+{
+    "query": "What stocks do I own and how did they perform today?",
+    "client_id": "CLT-001",
+    "portfolio_data": None,
+    "market_data": None,
+    "response": ""
+}
+                        </div>
+                    </div>
+
+                    <div class="flow-step" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
+                        <h4>After Planner Node</h4>
+                        <div class="data-box">
+{
+    "query": "What stocks do I own and how did they perform today?",
+    "client_id": "CLT-001",
+    "plan": "Need portfolio holdings + today's market performance",
+    "needs_portfolio": True,  ← Added
+    "needs_market": True,     ← Added
+    "wants_recommendations": False  ← Added
+}
+                        </div>
+                    </div>
+
+                    <div class="flow-step" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+                        <h4>After Portfolio Agent</h4>
+                        <div class="data-box">
+{
+    ...previous fields,
+    "portfolio_data": {       ← Added
+        "client_id": "CLT-001",
+        "holdings": [
+            {"symbol": "AAPL", "quantity": 50, ...},
+            {"symbol": "TSLA", "quantity": 30, ...}
+        ],
+        "total_holdings": 2
+    }
+}
+                        </div>
+                    </div>
+
+                    <div class="flow-step" style="background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);">
+                        <h4>After Market Agent</h4>
+                        <div class="data-box">
+{
+    ...previous fields,
+    "market_data": {          ← Added
+        "AAPL": {"current_price": 178.72, "day_change_pct": 1.30},
+        "TSLA": {"current_price": 242.84, "day_change_pct": 2.40}
+    }
+}
+                        </div>
+                    </div>
+
+                    <div class="flow-step" style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);">
+                        <h4>After Collaboration Node</h4>
+                        <div class="data-box">
+{
+    ...previous fields,
+    "collaboration_findings": {  ← Added
+        "synthesized": True,
+        "portfolio_holdings_analyzed": 2,
+        "market_data_points": 2
+    },
+    "response": "You own 2 stocks: AAPL (50 shares) gained 1.30% today..."  ← Modified
+}
+                        </div>
+                    </div>
+
+                    <div class="flow-step" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);">
+                        <h4>After Validator Node</h4>
+                        <div class="data-box">
+{
+    ...all previous fields,
+    "validated": True,           ← Added
+    "needs_clarification": False ← Added
+}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- COLLABORATION NODE -->
+            <div class="section">
+                <h2><span class="icon">🤝</span> Collaboration Node - The Synthesis Specialist</h2>
+
+                <h3>🎯 What Does the Collaboration Node Do?</h3>
+                <p>The <strong>Collaboration Node</strong> is the <span class="highlight">"synthesis agent"</span> that combines findings from Portfolio and Market agents. It's like a detective who pieces together clues from different sources.</p>
+
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <h4>🔍 Cross-Agent Analysis</h4>
+                        <p>Connects portfolio holdings with market events</p>
+                        <p><strong>Example:</strong> "AAPL gained 2% today, and you own 50 shares = $178 gain"</p>
+                    </div>
+
+                    <div class="feature-card">
+                        <h4>📊 Return Calculations</h4>
+                        <p>Compares purchase price to current price</p>
+                        <p><strong>Example:</strong> "Bought at $150.25, now $178.72 = +18.95% return"</p>
+                    </div>
+
+                    <div class="feature-card">
+                        <h4>🎖️ Performance Ranking</h4>
+                        <p>Identifies best and worst performers</p>
+                        <p><strong>Example:</strong> "TSLA has highest return at +35.7%, MSFT lowest at +8.2%"</p>
+                    </div>
+                </div>
+
+                <h3>🧠 When Does Collaboration Node Activate?</h3>
+                <p>The workflow uses the <code>needs_collaboration()</code> function to decide:</p>
+
+                <div class="code-block">
+<span class="code-keyword">def</span> <span class="code-function">needs_collaboration</span>(state: Dict) -> <span class="code-keyword">bool</span>:
+    query = state.<span class="code-function">get</span>(<span class="code-string">"query"</span>, <span class="code-string">""</span>).<span class="code-function">lower</span>()
+    
+    <span class="code-comment"># ✅ TRIGGER 1: Return/Performance Queries</span>
+    return_indicators = [
+        <span class="code-string">"return"</span>, <span class="code-string">"gain"</span>, <span class="code-string">"loss"</span>, <span class="code-string">"profit"</span>, <span class="code-string">"performance"</span>,
+        <span class="code-string">"highest"</span>, <span class="code-string">"best"</span>, <span class="code-string">"worst"</span>, <span class="code-string">"compared"</span>
+    ]
+    needs_return_calc = <span class="code-function">any</span>(word <span class="code-keyword">in</span> query <span class="code-keyword">for</span> word <span class="code-keyword">in</span> return_indicators)
+    
+    <span class="code-comment"># ✅ TRIGGER 2: Market Impact Queries</span>
+    market_indicators = [<span class="code-string">"news"</span>, <span class="code-string">"announcement"</span>, <span class="code-string">"price"</span>]
+    portfolio_indicators = [<span class="code-string">"my portfolio"</span>, <span class="code-string">"my holdings"</span>, <span class="code-string">"affect me"</span>]
+    
+    has_market = <span class="code-function">any</span>(word <span class="code-keyword">in</span> query <span class="code-keyword">for</span> word <span class="code-keyword">in</span> market_indicators)
+    has_portfolio = <span class="code-function">any</span>(word <span class="code-keyword">in</span> query <span class="code-keyword">for</span> word <span class="code-keyword">in</span> portfolio_indicators)
+    
+    <span class="code-comment"># ✅ TRIGGER 3: Both Agents Ran</span>
+    has_both_data = (
+        state.<span class="code-function">get</span>(<span class="code-string">"portfolio_data"</span>) <span class="code-keyword">is not None</span> <span class="code-keyword">and</span>
+        state.<span class="code-function">get</span>(<span class="code-string">"market_data"</span>) <span class="code-keyword">is not None</span>
+    )
+    
+    <span class="code-keyword">return</span> needs_return_calc <span class="code-keyword">or</span> (has_market <span class="code-keyword">and</span> has_portfolio) <span class="code-keyword">or</span> has_both_data
+                </div>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Query Type</th>
+                            <th>Collaboration Needed?</th>
+                            <th>Why?</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>"What stocks do I own?"</td>
+                            <td>❌ No</td>
+                            <td>Simple portfolio list, no synthesis needed</td>
+                        </tr>
+                        <tr>
+                            <td>"What's the price of AAPL?"</td>
+                            <td>❌ No</td>
+                            <td>Simple market query, no portfolio connection</td>
+                        </tr>
+                        <tr>
+                            <td>"Which of my stocks has highest return?"</td>
+                            <td>✅ Yes</td>
+                            <td>Needs portfolio holdings + current prices + calculation</td>
+                        </tr>
+                        <tr>
+                            <td>"How did my portfolio perform today?"</td>
+                            <td>✅ Yes</td>
+                            <td>Needs holdings + today's price changes + synthesis</td>
+                        </tr>
+                        <tr>
+                            <td>"AAPL news - how does it affect me?"</td>
+                            <td>✅ Yes</td>
+                            <td>Needs news + check if you own AAPL + impact analysis</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3>🔧 Collaboration Node Workflow</h3>
+                <div class="workflow-diagram">
+                    <div class="flow-step">
+                        <h4>Step 1: Extract Data from State</h4>
+                        <p>Gets portfolio_data, market_data, and existing response</p>
+                    </div>
+
+                    <div class="flow-step">
+                        <h4>Step 2: Calculate Returns</h4>
+                        <p>For each holding: compare purchase_price to current_price</p>
+                        <div class="code-block" style="margin-top: 10px;">
+return_pct = ((current_price - purchase_price) / purchase_price) * <span class="code-number">100</span>
+dollar_gain = (current_price - purchase_price) * quantity
+                        </div>
+                    </div>
+
+                    <div class="flow-step">
+                        <h4>Step 3: Sort by Performance</h4>
+                        <p>Ranks holdings from best to worst performer</p>
+                    </div>
+
+                    <div class="flow-step">
+                        <h4>Step 4: Create Synthesis Prompt</h4>
+                        <p>Builds specialized prompt based on wants_recommendations flag</p>
+                    </div>
+
+                    <div class="flow-step">
+                        <h4>Step 5: Generate Synthesis</h4>
+                        <p>LLM creates unified answer combining all data</p>
+                    </div>
+
+                    <div class="flow-step">
+                        <h4>Step 6: Update State</h4>
+                        <p>Stores collaboration_findings + replaces response</p>
+                    </div>
+                </div>
+
+                <h3>💡 Code Walkthrough - Collaboration Node</h3>
+                <div class="code-block">
+<span class="code-keyword">def</span> <span class="code-function">collaboration_node</span>(state: Dict) -> Dict:
+    <span class="code-comment"># 📥 Get data from state</span>
+    query = state.<span class="code-function">get</span>(<span class="code-string">"query"</span>)
+    portfolio_data = state.<span class="code-function">get</span>(<span class="code-string">"portfolio_data"</span>, {})
+    market_data = state.<span class="code-function">get</span>(<span class="code-string">"market_data"</span>, {})
+    wants_recommendations = state.<span class="code-function">get</span>(<span class="code-string">"wants_recommendations"</span>, <span class="code-keyword">False</span>)
+    
+    <span class="code-comment"># 📊 Build portfolio summary with returns</span>
+    returns_data = []
+    portfolio_summary = <span class="code-string">""</span>
+    
+    <span class="code-keyword">for</span> holding <span class="code-keyword">in</span> portfolio_data[<span class="code-string">"holdings"</span>]:
+        symbol = holding[<span class="code-string">'symbol'</span>]
+        purchase_price = holding.<span class="code-function">get</span>(<span class="code-string">'purchase_price'</span>, <span class="code-number">0</span>)
+        
+        <span class="code-comment"># Get current price from market_data</span>
+        current_price = market_data[symbol].<span class="code-function">get</span>(<span class="code-string">'current_price'</span>)
+        
+        <span class="code-comment"># 💰 Calculate return</span>
+        return_pct = ((current_price - purchase_price) / purchase_price) * <span class="code-number">100</span>
+        dollar_gain = (current_price - purchase_price) * quantity
+        
+        returns_data.<span class="code-function">append</span>({
+            <span class="code-string">'symbol'</span>: symbol,
+            <span class="code-string">'return_pct'</span>: return_pct,
+            <span class="code-string">'dollar_gain'</span>: dollar_gain
+        })
+    
+    <span class="code-comment"># 🎖️ Sort by performance (best first)</span>
+    returns_data.<span class="code-function">sort</span>(key=<span class="code-keyword">lambda</span> x: x[<span class="code-string">'return_pct'</span>], reverse=<span class="code-keyword">True</span>)
+    
+    <span class="code-comment"># 🧠 Create specialized prompt</span>
+    <span class="code-keyword">if</span> <span class="code-keyword">not</span> wants_recommendations:
+        <span class="code-comment"># INFORMATION MODE</span>
+        prompt = f<span class="code-string">"""
+        Synthesize these findings:
+        
+        Portfolio: {portfolio_summary}
+        Market: {market_summary}
+        
+        Use ACTUAL calculated returns. Be factual. NO recommendations.
+        """</span>
+    <span class="code-keyword">else</span>:
+        <span class="code-comment"># ADVISORY MODE</span>
+        prompt = f<span class="code-string">"""
+        Synthesize findings with considerations:
+        
+        Portfolio: {portfolio_summary}
+        Market: {market_summary}
+        
+        Present factors to consider (NOT commands).
+        End with disclaimer.
+        """</span>
+    
+    <span class="code-comment"># 🤖 Get LLM synthesis</span>
+    llm = <span class="code-function">get_llm</span>(temperature=<span class="code-number">0.5</span>)
+    response = llm.<span class="code-function">invoke</span>(prompt)
+    synthesis = response.content
+    
+    <span class="code-comment"># 💾 Store findings in state</span>
+    collaboration_findings = {
+        <span class="code-string">"synthesized"</span>: <span class="code-keyword">True</span>,
+        <span class="code-string">"portfolio_holdings_analyzed"</span>: <span class="code-function">len</span>(portfolio_data[<span class="code-string">"holdings"</span>]),
+        <span class="code-string">"market_data_points"</span>: <span class="code-function">len</span>(market_data)
+    }
+    
+    <span class="code-comment"># ✅ Return updated state</span>
+    <span class="code-keyword">return</span> {
+        **state,  <span class="code-comment"># Keep all existing fields</span>
+        <span class="code-string">"collaboration_findings"</span>: collaboration_findings,
+        <span class="code-string">"response"</span>: synthesis  <span class="code-comment"># Replace with synthesized version</span>
+    }
+                </div>
+
+                <h3>🎯 Real-World Example</h3>
+                <div class="example-box">
+                    <h4>Query: "Which of my stocks has the highest return?"</h4>
+                    
+                    <p><strong>Input State:</strong></p>
+                    <div class="data-box">
+portfolio_data: AAPL (bought $150), TSLA (bought $180), MSFT (bought $320)
+market_data: AAPL=$178.72, TSLA=$242.84, MSFT=$378.91
+                    </div>
+
+                    <p><strong>Collaboration Node Calculations:</strong></p>
+                    <div class="data-box">
+AAPL: ($178.72 - $150.00) / $150.00 = +19.15% ✅
+TSLA: ($242.84 - $180.00) / $180.00 = +34.91% 🏆 HIGHEST
+MSFT: ($378.91 - $320.00) / $320.00 = +18.41%
+
+Sorted: [TSLA: +34.91%, AAPL: +19.15%, MSFT: +18.41%]
+                    </div>
+
+                    <p><strong>Generated Response:</strong></p>
+                    <div class="data-box">
+Tesla (TSLA) has the highest return in your portfolio at +34.91%.
+
+Here's the complete performance breakdown:
+1. TSLA: +34.91% return (bought at $180.00, now $242.84)
+2. AAPL: +19.15% return (bought at $150.00, now $178.72)
+3. MSFT: +18.41% return (bought at $320.00, now $378.91)
+
+All three holdings are showing positive returns.
+                    </div>
+                </div>
+            </div>
+
+            <!-- STATE UPDATE PATTERNS -->
+            <div class="section">
+                <h2><span class="icon">📝</span> How Nodes Update State</h2>
+
+                <h3>✅ Correct Pattern (Immutable Update)</h3>
+                <div class="code-block">
+<span class="code-keyword">def</span> <span class="code-function">my_node</span>(state: Dict) -> Dict:
+    <span class="code-comment"># Read from state</span>
+    query = state.<span class="code-function">get</span>(<span class="code-string">"query"</span>)
+    
+    <span class="code-comment"># Do processing...</span>
+    result = <span class="code-function">process_data</span>(query)
+    
+    <span class="code-comment"># ✅ Return NEW state with updates</span>
+    <span class="code-keyword">return</span> {
+        **state,  <span class="code-comment"># Spread existing state (keeps all fields)</span>
+        <span class="code-string">"new_field"</span>: result,  <span class="code-comment"># Add new field</span>
+        <span class="code-string">"response"</span>: <span class="code-string">"Updated response"</span>  <span class="code-comment"># Modify existing field</span>
+    }
+                </div>
+
+                <h3>❌ Incorrect Pattern (Mutating State)</h3>
+                <div class="code-block">
+<span class="code-keyword">def</span> <span class="code-function">bad_node</span>(state: Dict) -> Dict:
+    <span class="code-comment"># ❌ DON'T DO THIS - Mutates original state</span>
+    state[<span class="code-string">"new_field"</span>] = result
+    state[<span class="code-string">"response"</span>] = <span class="code-string">"Updated"</span>
+    <span class="code-keyword">return</span> state
+                </div>
+
+                <h3>🔄 State Update Examples by Node</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Node</th>
+                            <th>Fields Added/Modified</th>
+                            <th>Example</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Planner</strong></td>
+                            <td>plan, needs_portfolio, needs_market, wants_recommendations</td>
+                            <td><code>{"plan": "...", "needs_portfolio": True}</code></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Portfolio Agent</strong></td>
+                            <td>portfolio_data</td>
+                            <td><code>{"portfolio_data": {...holdings...}}</code></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Market Agent</strong></td>
+                            <td>market_data</td>
+                            <td><code>{"market_data": {"AAPL": {...}}}</code></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Collaboration</strong></td>
+                            <td>collaboration_findings, response (replaces)</td>
+                            <td><code>{"collaboration_findings": {...}, "response": "..."}</code></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Validator</strong></td>
+                            <td>validated, needs_clarification, clarification_message</td>
+                            <td><code>{"validated": True, "needs_clarification": False}</code></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- KEY TAKEAWAYS -->
+            <div class="section">
+                <h2><span class="icon">💡</span> Key Takeaways</h2>
+
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <h4>🧠 State is Shared Memory</h4>
+                        <p>Every node reads from and writes to the same state object. It's the "shared clipboard" of the workflow.</p>
+                    </div>
+
+                    <div class="feature-card">
+                        <h4>🔄 State Flows Sequentially</h4>
+                        <p>State is passed from node to node. Each node adds its findings before passing it on.</p>
+                    </div>
+
+                    <div class="feature-card">
+                        <h4>📋 17 State Fields Total</h4>
+                        <p>From user inputs (query, client_id) to final output (response, validated).</p>
+                    </div>
+
+                    <div class="feature-card">
+                        <h4>🤝 Collaboration = Synthesis</h4>
+                        <p>Collaboration Node combines Portfolio + Market data to calculate returns and identify patterns.</p>
+                    </div>
+
+                    <div class="feature-card">
+                        <h4>🎯 Smart Activation</h4>
+                        <p>Collaboration only runs when needed (return queries, market impact, both agents ran).</p>
+                    </div>
+
+                    <div class="feature-card">
+                        <h4>💰 Real Calculations</h4>
+                        <p>Collaboration Node performs actual math: (current - purchase) / purchase × 100</p>
+                    </div>
+                </div>
+
+                <h3>🔍 State Categories Summary</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Category</th>
+                            <th>Fields</th>
+                            <th>Purpose</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><span class="badge badge-input">User Input</span></td>
+                            <td>query, client_id</td>
+                            <td>Initial request from user</td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge badge-data">Data</span></td>
+                            <td>portfolio_data, market_data</td>
+                            <td>Information gathered by agents</td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge badge-planning">Planning</span></td>
+                            <td>plan, needs_portfolio, needs_market, wants_recommendations</td>
+                            <td>Workflow routing decisions</td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge badge-collab">Collaboration</span></td>
+                            <td>collaboration_findings</td>
+                            <td>Cross-agent synthesis results</td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge badge-session">Session</span></td>
+                            <td>conversation_history</td>
+                            <td>Context for follow-up questions</td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge badge-validation">Validation</span></td>
+                            <td>validated, needs_clarification, clarification_message</td>
+                            <td>Quality control checks</td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge badge-output">Output</span></td>
+                            <td>response, messages</td>
+                            <td>Final answer to user</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <footer>
+            <p><strong>Portfolio Intelligence System</strong></p>
+            <p>Understanding State Management in LangGraph Workflows</p>
+            <p style="margin-top: 10px; opacity: 0.7;">© 2025 | Built with LangGraph & LangChain</p>
+        </footer>
+    </div>
+
+    <script>
+        // Add smooth scrolling
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+
+        // Add click animation to state fields
+        document.querySelectorAll('.state-field').forEach(field => {
+            field.addEventListener('click', function() {
+                this.style.transform = 'scale(1.02) translateX(10px)';
+                setTimeout(() => {
+                    this.style.transform = '';
+                }, 200);
+            });
+        });
+
+        // Add hover effect to flow steps
+        document.querySelectorAll('.flow-step').forEach(step => {
+            step.addEventListener('click', function() {
+                this.style.transform = 'scale(1.02)';
+                setTimeout(() => {
+                    this.style.transform = '';
+                }, 200);
+            });
+        });
+    </script>
+</body>
+</html>

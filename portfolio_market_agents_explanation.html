@@ -1,0 +1,1265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfolio & Market Agents Explained</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .section {
+            margin-bottom: 50px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .section h2 {
+            color: #f5576c;
+            font-size: 2em;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #f093fb;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .section h3 {
+            color: #f5576c;
+            font-size: 1.5em;
+            margin: 25px 0 15px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .icon {
+            font-size: 1.5em;
+        }
+
+        .workflow-diagram {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            margin: 20px 0;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .flow-step {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 10px;
+            position: relative;
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+        }
+
+        .flow-step:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(245, 87, 108, 0.4);
+        }
+
+        .flow-step::after {
+            content: '↓';
+            position: absolute;
+            bottom: -35px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 2em;
+            color: #f093fb;
+        }
+
+        .flow-step:last-child::after {
+            content: '';
+        }
+
+        .flow-step h4 {
+            font-size: 1.3em;
+            margin-bottom: 10px;
+        }
+
+        .flow-step p {
+            opacity: 0.95;
+            font-size: 1em;
+        }
+
+        .code-block {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            line-height: 1.5;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .code-comment {
+            color: #6272a4;
+        }
+
+        .code-keyword {
+            color: #ff79c6;
+        }
+
+        .code-function {
+            color: #50fa7b;
+        }
+
+        .code-string {
+            color: #f1fa8c;
+        }
+
+        .code-number {
+            color: #bd93f9;
+        }
+
+        .example-box {
+            background: white;
+            border-left: 4px solid #f093fb;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+
+        .example-box h4 {
+            color: #f5576c;
+            margin-bottom: 10px;
+            font-size: 1.2em;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .feature-card {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+
+        .feature-card h4 {
+            color: #f5576c;
+            font-size: 1.3em;
+            margin-bottom: 10px;
+        }
+
+        .tool-card {
+            background: linear-gradient(135deg, #fff5f7 0%, #ffe8ec 100%);
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 10px;
+            border-left: 5px solid #f093fb;
+            transition: transform 0.3s;
+        }
+
+        .tool-card:hover {
+            transform: translateX(10px);
+        }
+
+        .tool-card h4 {
+            color: #f5576c;
+            margin-bottom: 10px;
+            font-size: 1.2em;
+        }
+
+        .tool-card .tool-signature {
+            background: #2d2d2d;
+            color: #50fa7b;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            margin: 10px 0;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: bold;
+            margin: 5px;
+        }
+
+        .badge-portfolio {
+            background: #f093fb;
+            color: white;
+        }
+
+        .badge-market {
+            background: #f5576c;
+            color: white;
+        }
+
+        .badge-success {
+            background: #10b981;
+            color: white;
+        }
+
+        .badge-warning {
+            background: #f59e0b;
+            color: white;
+        }
+
+        .badge-info {
+            background: #3b82f6;
+            color: white;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        th {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: bold;
+        }
+
+        td {
+            padding: 15px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        tr:hover {
+            background: #fff5f7;
+        }
+
+        .data-flow {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            margin: 20px 0;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .data-box {
+            background: #fff5f7;
+            border: 2px dashed #f093fb;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+
+        footer {
+            background: #1f2937;
+            color: white;
+            text-align: center;
+            padding: 30px;
+            margin-top: 50px;
+        }
+
+        .highlight {
+            background: #fef3c7;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-weight: bold;
+        }
+
+        .comparison-table {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .comparison-box {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .comparison-box h4 {
+            color: #f5576c;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .section {
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        .interactive-button {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: bold;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin: 10px 5px;
+        }
+
+        .interactive-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(245, 87, 108, 0.4);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📊 Portfolio & Market Agents Explained</h1>
+            <p>Complete Deep-Dive into Data-Fetching Agents & Their Tools</p>
+        </header>
+
+        <div class="content">
+            <!-- OVERVIEW SECTION -->
+            <div class="section">
+                <h2><span class="icon">🎯</span> Executive Overview</h2>
+                <p>The <strong>Portfolio Agent</strong> and <strong>Market Agent</strong> are the two data-fetching specialists in your LangGraph workflow. They work together to gather all the information needed to answer user queries.</p>
+                
+                <div class="comparison-table">
+                    <div class="comparison-box">
+                        <h4>📁 Portfolio Agent</h4>
+                        <p><strong>Primary Role:</strong> Client Holdings Analyst</p>
+                        <p><strong>Data Source:</strong> portfolios.xlsx (Excel file)</p>
+                        <p><strong>Responsibilities:</strong></p>
+                        <ul style="list-style-position: inside; margin-top: 10px;">
+                            <li>Load client portfolio data</li>
+                            <li>Analyze holdings composition</li>
+                            <li>Calculate portfolio values</li>
+                            <li>Assess risk & diversification</li>
+                            <li>Identify performance patterns</li>
+                        </ul>
+                        <span class="badge badge-portfolio">Data Agent</span>
+                        <span class="badge badge-info">Excel-Based</span>
+                    </div>
+
+                    <div class="comparison-box">
+                        <h4>📈 Market Agent</h4>
+                        <p><strong>Primary Role:</strong> Real-Time Market Intelligence</p>
+                        <p><strong>Data Source:</strong> Yahoo Finance API (yfinance)</p>
+                        <p><strong>Responsibilities:</strong></p>
+                        <ul style="list-style-position: inside; margin-top: 10px;">
+                            <li>Fetch real-time stock prices</li>
+                            <li>Get market performance data</li>
+                            <li>Search for stock news</li>
+                            <li>Calculate returns & changes</li>
+                            <li>Provide sector information</li>
+                        </ul>
+                        <span class="badge badge-market">Data Agent</span>
+                        <span class="badge badge-success">API-Based</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PORTFOLIO AGENT SECTION -->
+            <div class="section">
+                <h2><span class="icon">📁</span> Portfolio Agent - The Holdings Specialist</h2>
+                
+                <h3>🔍 What Does the Portfolio Agent Do?</h3>
+                <p>The Portfolio Agent is activated when users ask about <span class="highlight">THEIR holdings</span> - the stocks and securities they own. It reads data from an Excel file containing all client portfolios.</p>
+
+                <div class="workflow-diagram">
+                    <div class="flow-step">
+                        <h4>Step 1: Load Client Data</h4>
+                        <p>Reads portfolios.xlsx and filters for specific client ID (e.g., CLT-001)</p>
+                    </div>
+
+                    <div class="flow-step">
+                        <h4>Step 2: Extract Holdings</h4>
+                        <p>Parses each stock: symbol, quantity, purchase price, sector, asset class</p>
+                    </div>
+
+                    <div class="flow-step">
+                        <h4>Step 3: Format for LLM</h4>
+                        <p>Creates human-readable text with all portfolio details</p>
+                    </div>
+
+                    <div class="flow-step">
+                        <h4>Step 4: Analyze Query Type</h4>
+                        <p>Determines if user wants: holdings list, risk analysis, or performance review</p>
+                    </div>
+
+                    <div class="flow-step">
+                        <h4>Step 5: Generate Response</h4>
+                        <p>Uses LLM to create tailored answer based on query type</p>
+                    </div>
+                </div>
+
+                <h3>🛠️ Portfolio Agent Tools</h3>
+                <p>The Portfolio Agent uses 4 specialized tools from <code>portfolio_tools.py</code>:</p>
+
+                <div class="tool-card">
+                    <h4>🔧 Tool 1: load_portfolio_data()</h4>
+                    <div class="tool-signature">
+load_portfolio_data(excel_path: str, client_id: str) → Dict
+                    </div>
+                    <p><strong>Purpose:</strong> Loads all holdings for a specific client from Excel file</p>
+                    <p><strong>Input:</strong></p>
+                    <ul style="list-style-position: inside; margin-left: 20px;">
+                        <li><code>excel_path</code>: Path to portfolios.xlsx</li>
+                        <li><code>client_id</code>: Client identifier (e.g., "CLT-001")</li>
+                    </ul>
+                    <p><strong>Output Dictionary:</strong></p>
+                    <div class="data-box">
+{
+    "client_id": "CLT-001",
+    "holdings": [
+        {
+            "symbol": "AAPL",
+            "security_name": "Apple Inc.",
+            "asset_class": "Stock",
+            "quantity": 50,
+            "purchase_price": 150.25,
+            "purchase_date": "2024-01-15",
+            "sector": "Technology"
+        },
+        ...
+    ],
+    "total_holdings": 5
+}
+                    </div>
+                    <p><strong>How It Works:</strong></p>
+                    <div class="code-block">
+<span class="code-comment"># 1. Read Excel file using pandas</span>
+df = pd.<span class="code-function">read_excel</span>(excel_path)
+
+<span class="code-comment"># 2. Filter for specific client</span>
+client_portfolio = df[df[<span class="code-string">'client_id'</span>] == client_id]
+
+<span class="code-comment"># 3. Convert each row to dictionary</span>
+<span class="code-keyword">for</span> _, row <span class="code-keyword">in</span> client_portfolio.<span class="code-function">iterrows</span>():
+    holding = {
+        <span class="code-string">"symbol"</span>: row[<span class="code-string">'symbol'</span>],
+        <span class="code-string">"quantity"</span>: row[<span class="code-string">'quantity'</span>],
+        <span class="code-comment"># ... extract all fields</span>
+    }
+    holdings.<span class="code-function">append</span>(holding)
+                    </div>
+                </div>
+
+                <div class="tool-card">
+                    <h4>🔧 Tool 2: get_client_holdings()</h4>
+                    <div class="tool-signature">
+get_client_holdings(portfolio_data: Dict) → List[str]
+                    </div>
+                    <p><strong>Purpose:</strong> Extracts just the ticker symbols from portfolio</p>
+                    <p><strong>Input:</strong> Portfolio dictionary from load_portfolio_data()</p>
+                    <p><strong>Output:</strong> List of ticker symbols: <code>["AAPL", "TSLA", "MSFT", "GOOGL"]</code></p>
+                    <p><strong>Why Important:</strong> Used by Market Agent to know which stocks to fetch prices for</p>
+                    <div class="code-block">
+<span class="code-comment"># Simple extraction of ticker symbols</span>
+tickers = [holding[<span class="code-string">"symbol"</span>] <span class="code-keyword">for</span> holding <span class="code-keyword">in</span> portfolio_data[<span class="code-string">"holdings"</span>]]
+
+<span class="code-comment"># Returns: ["AAPL", "TSLA", "MSFT", ...]</span>
+                    </div>
+                </div>
+
+                <div class="tool-card">
+                    <h4>🔧 Tool 3: calculate_portfolio_summary()</h4>
+                    <div class="tool-signature">
+calculate_portfolio_summary(portfolio_data: Dict, current_prices: Dict) → Dict
+                    </div>
+                    <p><strong>Purpose:</strong> Calculates gains/losses by comparing purchase price to current price</p>
+                    <p><strong>Inputs:</strong></p>
+                    <ul style="list-style-position: inside; margin-left: 20px;">
+                        <li><code>portfolio_data</code>: Holdings with purchase prices</li>
+                        <li><code>current_prices</code>: Current market prices from Market Agent</li>
+                    </ul>
+                    <p><strong>Output:</strong></p>
+                    <div class="data-box">
+{
+    "total_value": 25450.50,
+    "total_cost": 20000.00,
+    "total_gain_loss": 5450.50,
+    "total_gain_loss_pct": 27.25,
+    "holdings_summary": [
+        {
+            "symbol": "AAPL",
+            "quantity": 50,
+            "purchase_price": 150.25,
+            "current_price": 178.72,
+            "cost_basis": 7512.50,
+            "current_value": 8936.00,
+            "gain_loss": 1423.50,
+            "gain_loss_pct": 18.95
+        },
+        ...
+    ]
+}
+                    </div>
+                    <p><strong>Calculation Logic:</strong></p>
+                    <div class="code-block">
+<span class="code-comment"># For each holding:</span>
+cost_basis = quantity * purchase_price
+current_value = quantity * current_price
+
+gain_loss = current_value - cost_basis
+gain_loss_pct = (gain_loss / cost_basis) * <span class="code-number">100</span>
+
+<span class="code-comment"># Example:</span>
+<span class="code-comment"># Bought 50 AAPL at $150.25 = $7,512.50 cost</span>
+<span class="code-comment"># Now worth 50 AAPL at $178.72 = $8,936.00</span>
+<span class="code-comment"># Gain: $1,423.50 (18.95%)</span>
+                    </div>
+                </div>
+
+                <div class="tool-card">
+                    <h4>🔧 Tool 4: format_portfolio_for_llm()</h4>
+                    <div class="tool-signature">
+format_portfolio_for_llm(portfolio_data: Dict) → str
+                    </div>
+                    <p><strong>Purpose:</strong> Converts portfolio dictionary into human-readable text for LLM</p>
+                    <p><strong>Output Example:</strong></p>
+                    <div class="data-box">
+Portfolio for CLT-001:
+
+Total Holdings: 5
+Total Portfolio Value: $25,450.50
+
+Holdings Breakdown:
+1. Apple Inc. (AAPL)
+   - Asset Class: Stock
+   - Sector: Technology
+   - Quantity: 50
+   - Purchase Price: $150.25
+   - Purchase Date: 2024-01-15
+   - Holding Value: $7,512.50
+
+2. Tesla Inc. (TSLA)
+   ...
+                    </div>
+                </div>
+
+                <h3>💡 Portfolio Agent Query Intelligence</h3>
+                <p>The agent uses smart prompting to handle different query types:</p>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Query Type</th>
+                            <th>Detection Keywords</th>
+                            <th>Agent Behavior</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Holdings List</strong></td>
+                            <td>"what stocks", "what do I own", "my holdings"</td>
+                            <td>Lists all stocks with shares and values</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Risk Analysis</strong></td>
+                            <td>"risk", "diversified", "allocation", "sector"</td>
+                            <td>Analyzes sector concentration, asset class mix</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Performance Review</strong></td>
+                            <td>"best return", "worst performer", "ytd", "gain"</td>
+                            <td>Calculates returns, identifies top/bottom holdings</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Total Value</strong></td>
+                            <td>"total value", "portfolio worth", "how much"</td>
+                            <td>Reports aggregate portfolio value</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3>📝 Code Walkthrough - Portfolio Agent</h3>
+                <div class="code-block">
+<span class="code-keyword">def</span> <span class="code-function">portfolio_node</span>(state: Dict) -> Dict:
+    <span class="code-comment"># Extract query and client info</span>
+    query = state.<span class="code-function">get</span>(<span class="code-string">"query"</span>)
+    client_id = state.<span class="code-function">get</span>(<span class="code-string">"client_id"</span>, <span class="code-string">"CLT-001"</span>)
+    
+    <span class="code-comment"># 📂 TOOL 1: Load portfolio data from Excel</span>
+    portfolio_data = <span class="code-function">load_portfolio_data</span>(
+        excel_path=<span class="code-string">"portfolios.xlsx"</span>,
+        client_id=client_id
+    )
+    
+    <span class="code-comment"># 📄 TOOL 4: Format for LLM consumption</span>
+    portfolio_text = <span class="code-function">format_portfolio_for_llm</span>(portfolio_data)
+    
+    <span class="code-comment"># 🧠 Detect query type and create specialized prompt</span>
+    query_lower = query.<span class="code-function">lower</span>()
+    
+    <span class="code-keyword">if</span> <span class="code-string">"risk"</span> <span class="code-keyword">in</span> query_lower <span class="code-keyword">or</span> <span class="code-string">"diversif"</span> <span class="code-keyword">in</span> query_lower:
+        <span class="code-comment"># Risk analysis prompt</span>
+        analysis_prompt = f<span class="code-string">"""
+        Analyze the risk profile of this portfolio:
+        
+        {portfolio_text}
+        
+        Provide:
+        - Asset class distribution
+        - Sector allocation
+        - Concentration risks
+        - Diversification quality
+        """</span>
+        
+    <span class="code-keyword">elif</span> <span class="code-string">"performance"</span> <span class="code-keyword">in</span> query_lower:
+        <span class="code-comment"># Performance analysis prompt</span>
+        analysis_prompt = f<span class="code-string">"""
+        Analyze performance of holdings:
+        
+        {portfolio_text}
+        
+        Calculate returns and identify:
+        - Best performers
+        - Worst performers
+        - Overall portfolio gain/loss
+        """</span>
+    
+    <span class="code-keyword">else</span>:
+        <span class="code-comment"># General information prompt</span>
+        analysis_prompt = f<span class="code-string">"""
+        Answer the user's question about their portfolio:
+        Question: {query}
+        
+        {portfolio_text}
+        """</span>
+    
+    <span class="code-comment"># 🤖 Get LLM analysis</span>
+    llm = <span class="code-function">get_llm</span>()
+    response = llm.<span class="code-function">invoke</span>(analysis_prompt)
+    
+    <span class="code-comment"># ✅ Return updated state</span>
+    <span class="code-keyword">return</span> {
+        **state,
+        <span class="code-string">"portfolio_data"</span>: portfolio_data,
+        <span class="code-string">"response"</span>: response.content
+    }
+                </div>
+
+                <h3>🎯 Real-World Example - Portfolio Agent</h3>
+                <div class="example-box">
+                    <h4>User Query: "What's my portfolio's risk profile?"</h4>
+                    
+                    <p><strong>Step 1:</strong> Portfolio Agent loads CLT-001 data</p>
+                    <div class="data-box" style="font-size: 0.85em;">
+Holdings: AAPL (50), TSLA (30), MSFT (40), BND (100), VTI (25)
+                    </div>
+
+                    <p><strong>Step 2:</strong> Agent detects "risk" keyword → Use risk analysis mode</p>
+
+                    <p><strong>Step 3:</strong> LLM analyzes and responds:</p>
+                    <div class="data-box" style="font-size: 0.85em;">
+## Asset Class Distribution
+- 60% Stocks (AAPL, TSLA, MSFT, VTI)
+- 30% Bonds (BND)
+- 10% ETFs (VTI)
+
+## Sector Allocation
+- 40% Technology (AAPL, MSFT)
+- 20% Automotive (TSLA)
+- 30% Bonds (BND)
+- 10% Diversified (VTI)
+
+## Risk Assessment
+- Overall Risk: Moderate
+- Diversification: Good (5 holdings across 4 sectors)
+- Concentration Risk: Slight tech concentration (40%)
+                    </div>
+                </div>
+            </div>
+
+            <!-- MARKET AGENT SECTION -->
+            <div class="section">
+                <h2><span class="icon">📈</span> Market Agent - The Real-Time Intelligence Specialist</h2>
+                
+                <h3>🔍 What Does the Market Agent Do?</h3>
+                <p>The Market Agent is activated when users need <span class="highlight">CURRENT market data</span> - real-time prices, performance, and news. It fetches data from Yahoo Finance API using the yfinance library.</p>
+
+                <div class="workflow-diagram">
+                    <div class="flow-step" style="background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);">
+                        <h4>Step 1: Identify Stocks to Track</h4>
+                        <p>Gets ticker list from Portfolio Agent OR extracts from query</p>
+                    </div>
+
+                    <div class="flow-step" style="background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);">
+                        <h4>Step 2: Fetch Real-Time Prices</h4>
+                        <p>Uses yfinance API to get current prices, changes, and performance</p>
+                    </div>
+
+                    <div class="flow-step" style="background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);">
+                        <h4>Step 3: Search for News</h4>
+                        <p>Fetches latest news articles for relevant stocks</p>
+                    </div>
+
+                    <div class="flow-step" style="background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);">
+                        <h4>Step 4: Format Data</h4>
+                        <p>Creates clean, readable text for LLM consumption</p>
+                    </div>
+
+                    <div class="flow-step" style="background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);">
+                        <h4>Step 5: Generate Analysis</h4>
+                        <p>LLM interprets market data and answers user query</p>
+                    </div>
+                </div>
+
+                <h3>🛠️ Market Agent Tools</h3>
+                <p>The Market Agent uses 5 specialized tools from <code>market_tools.py</code>:</p>
+
+                <div class="tool-card">
+                    <h4>🔧 Tool 1: get_stock_price()</h4>
+                    <div class="tool-signature">
+get_stock_price(ticker: str) → Dict
+                    </div>
+                    <p><strong>Purpose:</strong> Fetches comprehensive price data for a single stock</p>
+                    <p><strong>Data Source:</strong> Yahoo Finance via yfinance library</p>
+                    <p><strong>Output Dictionary:</strong></p>
+                    <div class="data-box">
+{
+    "symbol": "AAPL",
+    "name": "Apple Inc.",
+    "current_price": 178.72,
+    "previous_close": 176.42,
+    "day_change": 2.30,
+    "day_change_pct": 1.30,
+    "ytd_return": 45.67,
+    "52_week_high": 199.62,
+    "52_week_low": 124.17,
+    "market_cap": 2800000000000,
+    "sector": "Technology",
+    "industry": "Consumer Electronics"
+}
+                    </div>
+                    <p><strong>How It Works:</strong></p>
+                    <div class="code-block">
+<span class="code-comment"># 1. Create yfinance Ticker object</span>
+stock = yf.<span class="code-function">Ticker</span>(ticker)
+
+<span class="code-comment"># 2. Get 5-day historical data</span>
+hist = stock.<span class="code-function">history</span>(period=<span class="code-string">"5d"</span>)
+
+<span class="code-comment"># 3. Extract current and previous close</span>
+current_price = hist[<span class="code-string">'Close'</span>].<span class="code-function">iloc</span>[-<span class="code-number">1</span>]
+previous_close = hist[<span class="code-string">'Close'</span>].<span class="code-function">iloc</span>[-<span class="code-number">2</span>]
+
+<span class="code-comment"># 4. Calculate changes</span>
+day_change = current_price - previous_close
+day_change_pct = (day_change / previous_close) * <span class="code-number">100</span>
+
+<span class="code-comment"># 5. Get YTD performance</span>
+ytd_hist = stock.<span class="code-function">history</span>(period=<span class="code-string">"ytd"</span>)
+ytd_return = ((current_price - ytd_hist[<span class="code-string">'Close'</span>][<span class="code-number">0</span>]) / ytd_hist[<span class="code-string">'Close'</span>][<span class="code-number">0</span>]) * <span class="code-number">100</span>
+                    </div>
+                    <p><strong>Error Handling:</strong> Includes fallback demo data for common tickers when API fails</p>
+                </div>
+
+                <div class="tool-card">
+                    <h4>🔧 Tool 2: get_multiple_stock_prices()</h4>
+                    <div class="tool-signature">
+get_multiple_stock_prices(tickers: List[str]) → Dict[str, Dict]
+                    </div>
+                    <p><strong>Purpose:</strong> Efficiently fetches prices for multiple stocks in parallel</p>
+                    <p><strong>Input:</strong> <code>["AAPL", "TSLA", "MSFT", "GOOGL"]</code></p>
+                    <p><strong>Output:</strong> Dictionary mapping each ticker to its price data</p>
+                    <p><strong>Performance Optimization:</strong></p>
+                    <div class="code-block">
+<span class="code-comment"># Uses ThreadPoolExecutor for parallel API calls</span>
+<span class="code-keyword">with</span> concurrent.futures.<span class="code-function">ThreadPoolExecutor</span>(max_workers=<span class="code-number">5</span>) <span class="code-keyword">as</span> executor:
+    <span class="code-comment"># Submit all tasks simultaneously</span>
+    future_to_ticker = {
+        executor.<span class="code-function">submit</span>(fetch_ticker_price, ticker): ticker 
+        <span class="code-keyword">for</span> ticker <span class="code-keyword">in</span> tickers
+    }
+    
+    <span class="code-comment"># Collect results as they complete</span>
+    <span class="code-keyword">for</span> future <span class="code-keyword">in</span> concurrent.futures.<span class="code-function">as_completed</span>(future_to_ticker):
+        ticker, price_data = future.<span class="code-function">result</span>()
+        results[ticker] = price_data
+
+<span class="code-comment"># Instead of sequential (slow):</span>
+<span class="code-comment"># for ticker in tickers:  # Takes 5 seconds for 5 stocks</span>
+<span class="code-comment">#     results[ticker] = get_stock_price(ticker)</span>
+
+<span class="code-comment"># Parallel execution takes ~1 second for 5 stocks!</span>
+                    </div>
+                    <p><strong>Why Important:</strong> User portfolios can have 10+ stocks. Parallel fetching makes it 5-10x faster!</p>
+                </div>
+
+                <div class="tool-card">
+                    <h4>🔧 Tool 3: search_stock_news()</h4>
+                    <div class="tool-signature">
+search_stock_news(ticker: str, query: Optional[str]) → List[Dict]
+                    </div>
+                    <p><strong>Purpose:</strong> Fetches latest news articles about a stock</p>
+                    <p><strong>Output:</strong> List of up to 5 most recent news items</p>
+                    <div class="data-box">
+[
+    {
+        "title": "Apple announces new AI chip for iPhone",
+        "publisher": "Reuters",
+        "link": "https://...",
+        "published": "2024-11-10 14:30:00"
+    },
+    {
+        "title": "Apple stock rises on strong earnings",
+        "publisher": "Bloomberg",
+        "link": "https://...",
+        "published": "2024-11-10 12:15:00"
+    },
+    ...
+]
+                    </div>
+                    <p><strong>Usage:</strong></p>
+                    <div class="code-block">
+<span class="code-comment"># Get all recent news for AAPL</span>
+news = <span class="code-function">search_stock_news</span>(<span class="code-string">"AAPL"</span>)
+
+<span class="code-comment"># Filter news by keyword</span>
+earnings_news = <span class="code-function">search_stock_news</span>(<span class="code-string">"AAPL"</span>, query=<span class="code-string">"earnings"</span>)
+                    </div>
+                </div>
+
+                <div class="tool-card">
+                    <h4>🔧 Tool 4: format_market_data_for_llm()</h4>
+                    <div class="tool-signature">
+format_market_data_for_llm(market_data: Dict) → str
+                    </div>
+                    <p><strong>Purpose:</strong> Converts market data dictionary into readable text</p>
+                    <p><strong>Output Example:</strong></p>
+                    <div class="data-box">
+Market Data:
+
+Apple Inc. (AAPL):
+  - Current Price: $178.72
+  - Day Change: +2.30 (+1.30%)
+  - YTD Return: +45.67%
+  - 52-Week Range: $124.17 - $199.62
+  - Sector: Technology
+
+Tesla Inc. (TSLA):
+  - Current Price: $242.84
+  - Day Change: +5.68 (+2.40%)
+  - YTD Return: +102.34%
+  - 52-Week Range: $101.81 - $299.29
+  - Sector: Automotive
+                    </div>
+                </div>
+
+                <div class="tool-card">
+                    <h4>🔧 Tool 5: format_news_for_llm()</h4>
+                    <div class="tool-signature">
+format_news_for_llm(news_data: Dict[str, List[Dict]]) → str
+                    </div>
+                    <p><strong>Purpose:</strong> Formats news articles into readable text</p>
+                    <p><strong>Output Example:</strong></p>
+                    <div class="data-box">
+Recent News:
+
+AAPL News:
+  1. Apple announces new AI chip for iPhone
+     Publisher: Reuters | 2024-11-10 14:30:00
+  
+  2. Apple stock rises on strong earnings
+     Publisher: Bloomberg | 2024-11-10 12:15:00
+
+TSLA News:
+  1. Tesla delivers record vehicles in Q4
+     Publisher: CNBC | 2024-11-10 13:45:00
+                    </div>
+                </div>
+
+                <h3>🎯 Real-World Example - Market Agent</h3>
+                <div class="example-box">
+                    <h4>User Query: "What's the current price of Apple stock?"</h4>
+                    
+                    <p><strong>Step 1:</strong> Market Agent extracts "AAPL" from query</p>
+
+                    <p><strong>Step 2:</strong> Calls <code>get_stock_price("AAPL")</code></p>
+                    <div class="data-box" style="font-size: 0.85em;">
+{
+    "symbol": "AAPL",
+    "name": "Apple Inc.",
+    "current_price": 178.72,
+    "day_change": +2.30,
+    "day_change_pct": +1.30%,
+    "sector": "Technology"
+}
+                    </div>
+
+                    <p><strong>Step 3:</strong> Formats data for LLM</p>
+
+                    <p><strong>Step 4:</strong> LLM generates response:</p>
+                    <div class="data-box" style="font-size: 0.85em;">
+Apple Inc. (AAPL) is currently trading at $178.72, up $2.30 (+1.30%) today. 
+It's a Technology sector stock that has shown strong performance recently.
+                    </div>
+                </div>
+
+                <div class="example-box">
+                    <h4>Combined Example: "How are my holdings performing today?"</h4>
+                    
+                    <p><strong>Step 1:</strong> Portfolio Agent gets holdings: <code>["AAPL", "TSLA", "MSFT"]</code></p>
+
+                    <p><strong>Step 2:</strong> Market Agent fetches all prices in parallel:</p>
+                    <div class="code-block">
+prices = <span class="code-function">get_multiple_stock_prices</span>([<span class="code-string">"AAPL"</span>, <span class="code-string">"TSLA"</span>, <span class="code-string">"MSFT"</span>])
+<span class="code-comment"># Takes ~1 second instead of 3 seconds sequentially</span>
+                    </div>
+
+                    <p><strong>Step 3:</strong> Combined analysis:</p>
+                    <div class="data-box" style="font-size: 0.85em;">
+Your portfolio is performing well today:
+
+✅ AAPL: +1.30% ($178.72)
+✅ TSLA: +2.40% ($242.84)
+✅ MSFT: +0.85% ($378.91)
+
+All three holdings are up today, with Tesla leading the gains at +2.40%.
+                    </div>
+                </div>
+            </div>
+
+            <!-- HOW THEY WORK TOGETHER -->
+            <div class="section">
+                <h2><span class="icon">🤝</span> How Portfolio & Market Agents Work Together</h2>
+                
+                <div class="workflow-diagram">
+                    <div class="flow-step" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+                        <h4>1️⃣ User Query</h4>
+                        <p>"What's my total portfolio value and how did it perform today?"</p>
+                    </div>
+
+                    <div class="flow-step" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                        <h4>2️⃣ Planner Decides</h4>
+                        <p>needs_portfolio=TRUE, needs_market=TRUE</p>
+                    </div>
+
+                    <div class="flow-step" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                        <h4>3️⃣ Portfolio Agent Loads Holdings</h4>
+                        <p>Tool: load_portfolio_data("portfolios.xlsx", "CLT-001")</p>
+                        <p>Result: AAPL (50 shares at $150.25), TSLA (30 at $180.00), MSFT (40 at $320.50)</p>
+                    </div>
+
+                    <div class="flow-step" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                        <h4>4️⃣ Portfolio Agent Extracts Tickers</h4>
+                        <p>Tool: get_client_holdings(portfolio_data)</p>
+                        <p>Result: ["AAPL", "TSLA", "MSFT"]</p>
+                    </div>
+
+                    <div class="flow-step" style="background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);">
+                        <h4>5️⃣ Market Agent Fetches Prices</h4>
+                        <p>Tool: get_multiple_stock_prices(["AAPL", "TSLA", "MSFT"])</p>
+                        <p>Result: AAPL=$178.72, TSLA=$242.84, MSFT=$378.91</p>
+                    </div>
+
+                    <div class="flow-step" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                        <h4>6️⃣ Portfolio Agent Calculates Returns</h4>
+                        <p>Tool: calculate_portfolio_summary(portfolio_data, current_prices)</p>
+                        <p>Result: Total value $25,450.50 (up 27.25% since purchase)</p>
+                    </div>
+
+                    <div class="flow-step" style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);">
+                        <h4>7️⃣ Combined Response Generated</h4>
+                        <p>"Your portfolio is worth $25,450.50. All stocks gained today: AAPL +1.3%, TSLA +2.4%, MSFT +0.9%"</p>
+                    </div>
+                </div>
+
+                <h3>📊 Data Flow Diagram</h3>
+                <div class="data-flow">
+                    <h4 style="color: #f5576c; margin-bottom: 15px;">Complete Data Pipeline</h4>
+                    <div class="code-block">
+<span class="code-comment">// USER QUERY</span>
+<span class="code-string">"Show me my holdings and their current performance"</span>
+
+<span class="code-comment">// ⬇️ PLANNER DECISION</span>
+needs_portfolio = <span class="code-keyword">true</span>  <span class="code-comment">// Need to know what they own</span>
+needs_market = <span class="code-keyword">true</span>     <span class="code-comment">// Need current prices</span>
+
+<span class="code-comment">// ⬇️ PORTFOLIO AGENT ACTIONS</span>
+portfolio_data = <span class="code-function">load_portfolio_data</span>(<span class="code-string">"portfolios.xlsx"</span>, <span class="code-string">"CLT-001"</span>)
+<span class="code-comment">// Returns: {holdings: [{symbol: "AAPL", quantity: 50, ...}, ...]}</span>
+
+tickers = <span class="code-function">get_client_holdings</span>(portfolio_data)
+<span class="code-comment">// Returns: ["AAPL", "TSLA", "MSFT", "BND", "VTI"]</span>
+
+<span class="code-comment">// ⬇️ MARKET AGENT ACTIONS</span>
+market_data = <span class="code-function">get_multiple_stock_prices</span>(tickers)
+<span class="code-comment">// Parallel API calls to Yahoo Finance</span>
+<span class="code-comment">// Returns: {</span>
+<span class="code-comment">//   "AAPL": {current_price: 178.72, day_change_pct: 1.30, ...},</span>
+<span class="code-comment">//   "TSLA": {current_price: 242.84, day_change_pct: 2.40, ...},</span>
+<span class="code-comment">//   ...</span>
+<span class="code-comment">// }</span>
+
+news_data = <span class="code-function">search_stock_news</span>(<span class="code-string">"AAPL"</span>)
+<span class="code-comment">// Returns: [{title: "Apple announces...", ...}, ...]</span>
+
+<span class="code-comment">// ⬇️ PORTFOLIO AGENT CALCULATION</span>
+summary = <span class="code-function">calculate_portfolio_summary</span>(portfolio_data, market_data)
+<span class="code-comment">// Returns: {</span>
+<span class="code-comment">//   total_value: 25450.50,</span>
+<span class="code-comment">//   total_gain_loss: 5450.50,</span>
+<span class="code-comment">//   holdings_summary: [...]</span>
+<span class="code-comment">// }</span>
+
+<span class="code-comment">// ⬇️ FORMAT FOR LLM</span>
+portfolio_text = <span class="code-function">format_portfolio_for_llm</span>(portfolio_data)
+market_text = <span class="code-function">format_market_data_for_llm</span>(market_data)
+news_text = <span class="code-function">format_news_for_llm</span>(news_data)
+
+<span class="code-comment">// ⬇️ LLM GENERATES RESPONSE</span>
+llm_response = <span class="code-function">llm.invoke</span>(f<span class="code-string">"""
+User query: {query}
+
+{portfolio_text}
+{market_text}
+{news_text}
+
+Provide comprehensive answer about holdings and performance.
+"""</span>)
+
+<span class="code-comment">// ⬇️ VALIDATOR CHECKS</span>
+<span class="code-keyword">if</span> <span class="code-function">validate_response</span>(llm_response, portfolio_data, market_data):
+    <span class="code-keyword">return</span> llm_response  <span class="code-comment">// Send to user ✅</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- KEY TAKEAWAYS -->
+            <div class="section">
+                <h2><span class="icon">💡</span> Key Takeaways</h2>
+                
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <h4>📁 Portfolio Agent</h4>
+                        <ul style="list-style-position: inside;">
+                            <li><strong>Data Source:</strong> Excel file (portfolios.xlsx)</li>
+                            <li><strong>4 Core Tools:</strong> load, extract, calculate, format</li>
+                            <li><strong>Strengths:</strong> Historical data, purchase info, complete holdings</li>
+                            <li><strong>Limitations:</strong> No real-time prices (needs Market Agent)</li>
+                            <li><strong>Use Case:</strong> "What do I own?", "My portfolio risk?"</li>
+                        </ul>
+                    </div>
+
+                    <div class="feature-card">
+                        <h4>📈 Market Agent</h4>
+                        <ul style="list-style-position: inside;">
+                            <li><strong>Data Source:</strong> Yahoo Finance API (yfinance)</li>
+                            <li><strong>5 Core Tools:</strong> price, batch, news, 2x formatters</li>
+                            <li><strong>Strengths:</strong> Real-time data, performance metrics, news</li>
+                            <li><strong>Limitations:</strong> Doesn't know what user owns (needs Portfolio Agent)</li>
+                            <li><strong>Use Case:</strong> "Current price?", "Today's performance?"</li>
+                        </ul>
+                    </div>
+
+                    <div class="feature-card">
+                        <h4>🤝 Together They Provide</h4>
+                        <ul style="list-style-position: inside;">
+                            <li>Complete portfolio visibility</li>
+                            <li>Real-time valuation</li>
+                            <li>Gain/loss calculations</li>
+                            <li>Performance tracking</li>
+                            <li>Risk analysis with current data</li>
+                            <li>News context for holdings</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <h3>📊 Performance Optimizations</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Optimization</th>
+                            <th>How It Works</th>
+                            <th>Performance Gain</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Parallel API Calls</strong></td>
+                            <td>ThreadPoolExecutor fetches multiple stocks simultaneously</td>
+                            <td>5-10x faster for portfolios with 10+ holdings</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Fallback Demo Data</strong></td>
+                            <td>Pre-defined prices for common stocks when API fails</td>
+                            <td>Ensures system always responds (no failures)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Data Caching</strong></td>
+                            <td>Portfolio data loaded once, reused across queries</td>
+                            <td>Reduces Excel read operations</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Smart Ticker Extraction</strong></td>
+                            <td>Uses portfolio holdings instead of parsing query</td>
+                            <td>More accurate, faster stock identification</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- COMPARISON TABLE -->
+            <div class="section">
+                <h2><span class="icon">⚖️</span> Side-by-Side Comparison</h2>
+                
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Aspect</th>
+                            <th>Portfolio Agent 📁</th>
+                            <th>Market Agent 📈</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Primary Function</strong></td>
+                            <td>Analyze what user owns</td>
+                            <td>Fetch current market data</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Data Source</strong></td>
+                            <td>Excel file (portfolios.xlsx)</td>
+                            <td>Yahoo Finance API</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Data Freshness</strong></td>
+                            <td>Historical (purchase info)</td>
+                            <td>Real-time (current prices)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Number of Tools</strong></td>
+                            <td>4 tools</td>
+                            <td>5 tools</td>
+                        </tr>
+                        <tr>
+                            <td><strong>External Dependencies</strong></td>
+                            <td>pandas (Excel reading)</td>
+                            <td>yfinance (Yahoo Finance API)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Performance Bottleneck</strong></td>
+                            <td>Excel file I/O (fast)</td>
+                            <td>API rate limits (can be slow)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Error Handling</strong></td>
+                            <td>Missing client = error message</td>
+                            <td>API fail = fallback demo data</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Query Examples</strong></td>
+                            <td>"What stocks do I own?"<br>"My risk profile?"</td>
+                            <td>"Price of AAPL?"<br>"Today's market news?"</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Can Work Alone?</strong></td>
+                            <td>Yes (for holdings list, sectors)</td>
+                            <td>Yes (for price queries)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Best Together For</strong></td>
+                            <td colspan="2" style="text-align: center;">Performance analysis, valuations, gain/loss calculations</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <footer>
+            <p><strong>Portfolio Intelligence System</strong></p>
+            <p>LangGraph Data-Fetching Agents with Smart Tool Integration</p>
+            <p style="margin-top: 10px; opacity: 0.7;">© 2025 | Built with LangChain, LangGraph & yfinance</p>
+        </footer>
+    </div>
+
+    <script>
+        // Add smooth scrolling
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+
+        // Add hover effect to flow steps
+        document.querySelectorAll('.flow-step').forEach(step => {
+            step.addEventListener('click', function() {
+                this.style.transform = 'scale(1.02)';
+                setTimeout(() => {
+                    this.style.transform = '';
+                }, 200);
+            });
+        });
+    </script>
+</body>
+</html>

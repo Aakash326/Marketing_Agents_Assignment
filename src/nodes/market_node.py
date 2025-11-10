@@ -43,7 +43,7 @@ def market_node(state: Dict) -> Dict:
         # Enhanced ticker extraction with regex
         import re
         query_upper = query.upper()
-        
+
         # Check conversation history for ticker mentions if query is very short (likely a follow-up)
         context_text = query_upper
         if len(query.split()) <= 3 and conversation_history:
@@ -60,13 +60,14 @@ def market_node(state: Dict) -> Dict:
             "NFLX", "DIS", "INTC", "CSCO", "ADBE", "CRM", "ORCL", "IBM"
         ]
 
-        # Blacklist of common English words that look like tickers
+        # Blacklist of common English words that look like tickers (excluding BUY which can be confused)
         english_words_blacklist = [
             "DATE", "YEAR", "RETURN", "GAIN", "LOSS", "HOLD", "BEST", "WORST",
             "TOP", "TOTAL", "VALUE", "PRICE", "STOCK", "HAVE", "DOES", "WHAT",
             "WHICH", "ABOUT", "FROM", "WITH", "THAT", "THIS", "THEM", "THEY",
             "SHOW", "TELL", "GIVE", "MAKE", "TAKE", "BEEN", "WERE", "WILL",
-            "YOUR", "THEIR", "THERE", "WHERE", "WHEN", "WOULD", "COULD", "SHOULD"
+            "YOUR", "THEIR", "THERE", "WHERE", "WHEN", "WOULD", "COULD", "SHOULD",
+            "BUY", "SELL"  # Added BUY and SELL to blacklist
         ]
 
         # Method 1: Look for exact word matches (separated by spaces)
@@ -85,6 +86,26 @@ def market_node(state: Dict) -> Dict:
                 # Only accept if it's in common tickers AND not in blacklist
                 if ticker in common_tickers and ticker not in english_words_blacklist:
                     tickers.append(ticker)
+
+        # Method 3: Check for general stock recommendation queries
+        # If still no tickers and query asks for general recommendations, provide popular stocks
+        if not tickers:
+            recommendation_patterns = [
+                r'which\s+stock.*buy',
+                r'what\s+stock.*buy',
+                r'recommend.*stock',
+                r'suggest.*stock',
+                r'best\s+stock',
+                r'good\s+stock.*buy',
+                r'stock.*recommendation'
+            ]
+
+            query_lower = query.lower()
+            is_general_recommendation = any(re.search(pattern, query_lower) for pattern in recommendation_patterns)
+
+            if is_general_recommendation:
+                # Provide a diversified set of popular stocks for analysis
+                tickers = ["AAPL", "MSFT", "NVDA", "GOOGL"]
 
         # Remove duplicates
         tickers = list(set(tickers))
@@ -202,7 +223,11 @@ Response:"""
         analysis_prompt = f"""You are a market analysis agent providing educational market context.
 
 # RESPONSE GUIDELINES (Advisory Mode):
-# - Provide market context for decision-making
+# - Provide market context for decision-making with specific reasons
+# - For each stock analyzed, explain:
+#   1. Current performance (price, % change)
+#   2. Key strengths (market position, growth, sector trends)
+#   3. Potential risks (volatility, market conditions, competition)
 # - Present considerations, NOT commands
 # - Use "you might consider" NOT "you should"
 # - Present market factors and trends, not directives
@@ -237,9 +262,14 @@ Enhanced Response:"""
         else:
             analysis_prompt += """
 
-Based on the market data and news above, provide market considerations.
-Use phrases like "you might consider" or "one factor to consider".
-Present market trends and factors, not commands.
+Based on the market data and news above, provide a structured analysis:
+
+For each stock, provide:
+1. **Current Status**: Price and recent performance
+2. **Strengths**: Why this might be an attractive option (e.g., strong fundamentals, growth potential, market position)
+3. **Considerations**: Factors to be aware of (e.g., volatility, risks, market conditions)
+
+Use educational phrases like "you might consider", "one factor to consider", or "investors often look at".
 
 IMPORTANT: End your response with:
 "Note: This is educational analysis, not financial advice. Please consult a licensed financial advisor for personalized investment recommendations."
