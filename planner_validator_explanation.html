@@ -574,6 +574,47 @@ User: <span class="code-string">"Tell me more about the first one"</span>
                     <span class="badge badge-warning">wants_recommendations = TRUE</span><br>
                     <strong>Result:</strong> Both agents activated + recommendation mode enabled
                 </div>
+
+                <h3>🛠️ Planner Node Tools</h3>
+                <p>The Planner Node <strong>doesn't use external tools</strong> - it relies entirely on the LLM's intelligence to classify queries. However, here's what it has access to:</p>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Resource</th>
+                            <th>Purpose</th>
+                            <th>How It's Used</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Conversation History</strong></td>
+                            <td>Understand context from previous messages</td>
+                            <td>Last 8 messages (4 Q&A pairs) are included in planning prompt</td>
+                        </tr>
+                        <tr>
+                            <td><strong>LLM (GPT-4o-mini)</strong></td>
+                            <td>Natural language understanding and classification</td>
+                            <td>Analyzes query intent with temperature=0.3 for consistency</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Pattern Matching</strong></td>
+                            <td>Parse LLM response to extract decisions</td>
+                            <td>Looks for "YES/NO" patterns in LLM output</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="example-box">
+                    <h4>🧠 Why No External Tools?</h4>
+                    <p>The Planner's job is <strong>pure decision-making</strong>, not data fetching. It doesn't need to:</p>
+                    <ul style="list-style-position: inside; margin-left: 20px; margin-top: 10px;">
+                        <li>❌ Load any files (that's Portfolio Agent's job)</li>
+                        <li>❌ Call any APIs (that's Market Agent's job)</li>
+                        <li>❌ Validate responses (that's Validator's job)</li>
+                        <li>✅ Just analyze the query and make routing decisions</li>
+                    </ul>
+                </div>
             </div>
 
             <!-- VALIDATOR NODE DETAILED SECTION -->
@@ -810,6 +851,148 @@ Validator adds warning:
                         <strong>All checks passed!</strong>
                         <br>➜ <span class="badge badge-success">Response Validated ✓</span>
                     </div>
+                </div>
+
+                <h3>🛠️ Validator Node Tools</h3>
+                <p>The Validator Node uses <strong>4 specialized validation tools</strong> from <code>validator_tools.py</code>:</p>
+
+                <div class="tool-card" style="background: linear-gradient(135deg, #fff5f7 0%, #ffe8ec 100%); padding: 20px; margin: 15px 0; border-radius: 10px; border-left: 5px solid #667eea;">
+                    <h4 style="color: #764ba2; margin-bottom: 10px;">🔧 Tool 1: detect_ambiguity()</h4>
+                    <div style="background: #2d2d2d; color: #50fa7b; padding: 10px; border-radius: 5px; font-family: 'Courier New', monospace; font-size: 0.9em; margin: 10px 0;">
+detect_ambiguity(query: str, conversation_history: List[Dict]) → Tuple[bool, str]
+                    </div>
+                    <p><strong>Purpose:</strong> Detects vague or unclear queries that need clarification</p>
+                    <p><strong>What It Checks:</strong></p>
+                    <ul style="list-style-position: inside; margin-left: 20px;">
+                        <li><strong>Vague pronouns:</strong> "it", "that stock", "that one", "this one"</li>
+                        <li><strong>Relative terms:</strong> "best", "worst", "top", "most" (without context)</li>
+                        <li><strong>Time references:</strong> "recent", "lately", "previously" (without timeframe)</li>
+                        <li><strong>Incomplete comparisons:</strong> "compared to" without both items</li>
+                    </ul>
+                    <p><strong>Returns:</strong></p>
+                    <ul style="list-style-position: inside; margin-left: 20px;">
+                        <li><code>(True, "Which stock are you referring to?")</code> if ambiguous</li>
+                        <li><code>(False, "")</code> if query is clear</li>
+                    </ul>
+                </div>
+
+                <div class="tool-card" style="background: linear-gradient(135deg, #fff5f7 0%, #ffe8ec 100%); padding: 20px; margin: 15px 0; border-radius: 10px; border-left: 5px solid #667eea;">
+                    <h4 style="color: #764ba2; margin-bottom: 10px;">🔧 Tool 2: check_data_sufficiency()</h4>
+                    <div style="background: #2d2d2d; color: #50fa7b; padding: 10px; border-radius: 5px; font-family: 'Courier New', monospace; font-size: 0.9em; margin: 10px 0;">
+check_data_sufficiency(query: str, portfolio_data: Dict, market_data: Dict) → Tuple[bool, str]
+                    </div>
+                    <p><strong>Purpose:</strong> Verifies we have enough data to answer the query</p>
+                    <p><strong>What It Checks:</strong></p>
+                    <ul style="list-style-position: inside; margin-left: 20px;">
+                        <li><strong>Missing portfolio data:</strong> Query asks about holdings but no data loaded</li>
+                        <li><strong>Missing market data:</strong> Query asks about prices but API unavailable</li>
+                        <li><strong>Unknown tickers:</strong> User mentions stock not in portfolio or market data</li>
+                    </ul>
+                    <p><strong>Example Detection:</strong></p>
+                    <div style="background: #f3f4f6; border: 2px dashed #667eea; padding: 15px; margin: 10px 0; border-radius: 8px; font-family: 'Courier New', monospace; font-size: 0.9em;">
+Query: "What's the price of XYZ?"
+Portfolio: [AAPL, TSLA, MSFT]
+Market Data: [AAPL, TSLA, MSFT]
+
+Result: (False, "I don't have market data for XYZ. Would you like me to search for it?")
+                    </div>
+                </div>
+
+                <div class="tool-card" style="background: linear-gradient(135deg, #fff5f7 0%, #ffe8ec 100%); padding: 20px; margin: 15px 0; border-radius: 10px; border-left: 5px solid #667eea;">
+                    <h4 style="color: #764ba2; margin-bottom: 10px;">🔧 Tool 3: enhanced_fact_check()</h4>
+                    <div style="background: #2d2d2d; color: #50fa7b; padding: 10px; border-radius: 5px; font-family: 'Courier New', monospace; font-size: 0.9em; margin: 10px 0;">
+enhanced_fact_check(response: str, portfolio_data: Dict, market_data: Dict) → Dict
+                    </div>
+                    <p><strong>Purpose:</strong> Detects AI hallucinations (made-up facts not in data)</p>
+                    <p><strong>What It Checks:</strong></p>
+                    <ul style="list-style-position: inside; margin-left: 20px;">
+                        <li><strong>Unknown tickers:</strong> Response mentions stocks not in any data source</li>
+                        <li><strong>Price accuracy:</strong> Compares mentioned prices to actual market data (±50% tolerance)</li>
+                        <li><strong>Contradictory percentages:</strong> Response has conflicting positive/negative changes</li>
+                        <li><strong>Smart filtering:</strong> Ignores common English words that look like tickers (THE, AND, FOR, etc.)</li>
+                    </ul>
+                    <p><strong>Returns Dictionary:</strong></p>
+                    <div style="background: #f3f4f6; border: 2px dashed #667eea; padding: 15px; margin: 10px 0; border-radius: 8px; font-family: 'Courier New', monospace; font-size: 0.9em;">
+{
+    "hallucinations": ["Mentions GOOGL not in portfolio data"],
+    "issues": ["Price for AAPL seems incorrect: mentioned $200, actual $175.50"],
+    "has_hallucinations": True,
+    "fact_check_passed": False
+}
+                    </div>
+                </div>
+
+                <div class="tool-card" style="background: linear-gradient(135deg, #fff5f7 0%, #ffe8ec 100%); padding: 20px; margin: 15px 0; border-radius: 10px; border-left: 5px solid #667eea;">
+                    <h4 style="color: #764ba2; margin-bottom: 10px;">🔧 Tool 4: validate_response()</h4>
+                    <div style="background: #2d2d2d; color: #50fa7b; padding: 10px; border-radius: 5px; font-family: 'Courier New', monospace; font-size: 0.9em; margin: 10px 0;">
+validate_response(response: str, query: str, data_sources: Dict) → Dict
+                    </div>
+                    <p><strong>Purpose:</strong> Overall quality check with confidence scoring</p>
+                    <p><strong>What It Checks:</strong></p>
+                    <ul style="list-style-position: inside; margin-left: 20px;">
+                        <li><strong>Response length:</strong> Too short = likely error</li>
+                        <li><strong>Vague statements:</strong> "I don't have access", "I cannot see"</li>
+                        <li><strong>Missing stock mentions:</strong> Portfolio query but no actual holdings referenced</li>
+                        <li><strong>Missing numerical data:</strong> Price query but no numbers in response</li>
+                    </ul>
+                    <p><strong>Confidence Scoring:</strong></p>
+                    <div style="background: #f3f4f6; border: 2px dashed #667eea; padding: 15px; margin: 10px 0; border-radius: 8px; font-family: 'Courier New', monospace; font-size: 0.9em;">
+Start: confidence = 1.0
+-0.2 for vague phrases
+-0.3 if no stock mentions when expected
+-0.2 if no numbers in price query
+-0.1 for potentially contradictory terms
+
+Final: confidence = max(0.0, min(1.0, calculated_score))
+Valid if confidence >= 0.5
+                    </div>
+                    <p><strong>Returns:</strong></p>
+                    <div style="background: #f3f4f6; border: 2px dashed #667eea; padding: 15px; margin: 10px 0; border-radius: 8px; font-family: 'Courier New', monospace; font-size: 0.9em;">
+{
+    "is_valid": True/False,
+    "issues": ["List of detected issues"],
+    "confidence": 0.85  # Range: 0.0 to 1.0
+}
+                    </div>
+                </div>
+
+                <h3>📊 Tool Execution Order</h3>
+                <div class="workflow-diagram">
+                    <div class="flow-step" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);">
+                        <h4>Tool 1: detect_ambiguity()</h4>
+                        <p>✅ Check if query is clear → If ambiguous, stop and ask for clarification</p>
+                    </div>
+
+                    <div class="flow-step" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+                        <h4>Tool 2: check_data_sufficiency()</h4>
+                        <p>✅ Check if we have required data → If missing, stop and inform user</p>
+                    </div>
+
+                    <div class="flow-step" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
+                        <h4>Tool 3: enhanced_fact_check()</h4>
+                        <p>✅ Check for hallucinations → If found, add warning to response</p>
+                    </div>
+
+                    <div class="flow-step" style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);">
+                        <h4>Tool 4: validate_response()</h4>
+                        <p>✅ Overall quality check → If low confidence, add disclaimer</p>
+                    </div>
+                </div>
+
+                <div class="example-box">
+                    <h4>🔍 Real Example: Tool Execution</h4>
+                    <strong>Query:</strong> "What's the price of NVDA?"<br>
+                    <strong>Portfolio:</strong> AAPL, TSLA, MSFT<br>
+                    <strong>Market Data:</strong> AAPL, TSLA, MSFT<br><br>
+                    
+                    <strong>Tool 1 (detect_ambiguity):</strong><br>
+                    <span class="badge badge-success">PASS</span> - Query is clear<br><br>
+
+                    <strong>Tool 2 (check_data_sufficiency):</strong><br>
+                    <span class="badge badge-error">FAIL</span> - NVDA not in portfolio or market data<br>
+                    <strong>Result:</strong> "I don't have market data for NVDA. Would you like me to search for it?"<br><br>
+
+                    <strong>Tools 3 & 4:</strong> Not executed (stopped early)
                 </div>
             </div>
 

@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 from typing import Annotated
 
 load_dotenv()
-Alpha=os.getenv("ALPHA")
+Alpha=os.getenv("ALPHA_VANTAGE_API_KEY") or os.getenv("ALPHA")
 
 try:
     model_client = get_model_client()
@@ -138,8 +138,49 @@ def get_comprehensive_stock_data(symbol: Annotated[str, "Stock symbol like AAPL,
     - Fundamental data (P/E ratio, analyst targets)
     - Earnings date
     - 52-week range
+
+    Falls back to simulated data if API fails or rate limit is exceeded.
     """
-    
+
+    # Simulated fallback data for common stocks
+    simulated_data = {
+        "AAPL": {
+            "price": 268.47, "volume": 48000000, "pe_ratio": "28.5",
+            "target": "285.00", "week_52_high": "277.32", "week_52_low": "169.21",
+            "rsi": 52.3, "macd": "NEUTRAL", "earnings": "2025-01-25"
+        },
+        "GOOGL": {
+            "price": 278.83, "volume": 34500000, "pe_ratio": "24.2",
+            "target": "295.00", "week_52_high": "291.59", "week_52_low": "140.53",
+            "rsi": 48.7, "macd": "NEUTRAL", "earnings": "2025-01-30"
+        },
+        "MSFT": {
+            "price": 496.82, "volume": 22000000, "pe_ratio": "35.8",
+            "target": "525.00", "week_52_high": "555.45", "week_52_low": "344.79",
+            "rsi": 54.1, "macd": "BULLISH", "earnings": "2025-01-28"
+        },
+        "TSLA": {
+            "price": 242.84, "volume": 95000000, "pe_ratio": "68.5",
+            "target": "275.00", "week_52_high": "299.29", "week_52_low": "138.80",
+            "rsi": 58.9, "macd": "BULLISH", "earnings": "2025-01-24"
+        },
+        "AMZN": {
+            "price": 218.55, "volume": 45000000, "pe_ratio": "42.3",
+            "target": "240.00", "week_52_high": "238.11", "week_52_low": "144.05",
+            "rsi": 51.2, "macd": "NEUTRAL", "earnings": "2025-02-01"
+        },
+        "NVDA": {
+            "price": 188.15, "volume": 280000000, "pe_ratio": "48.9",
+            "target": "210.00", "week_52_high": "212.19", "week_52_low": "86.62",
+            "rsi": 61.5, "macd": "BULLISH", "earnings": "2025-02-15"
+        },
+        "META": {
+            "price": 612.34, "volume": 15000000, "pe_ratio": "26.7",
+            "target": "650.00", "week_52_high": "638.40", "week_52_low": "365.00",
+            "rsi": 55.8, "macd": "BULLISH", "earnings": "2025-01-29"
+        }
+    }
+
     try:
         # Get current price and volume
         quote_url = "https://www.alphavantage.co/query"
@@ -228,10 +269,30 @@ def get_comprehensive_stock_data(symbol: Annotated[str, "Stock symbol like AAPL,
                 return f"PRICE: ${price:.2f} | VOLUME: {volume:,} | P/E: {pe_ratio} | RSI: INSUFFICIENT_DATA | MACD: INSUFFICIENT_DATA | TARGET: ${analyst_target} | 52W: ${week_52_low}-${week_52_high} | EARNINGS: {next_earnings}"
             
         else:
-            return f"❌ Could not get comprehensive data for {symbol.upper()}"
-            
+            # API returned no data - use simulated fallback
+            symbol_upper = symbol.upper()
+            if symbol_upper in simulated_data:
+                data = simulated_data[symbol_upper]
+                return (f"⚠️ SIMULATED DATA (API unavailable) | "
+                       f"PRICE: ${data['price']:.2f} | VOLUME: {data['volume']:,} | "
+                       f"P/E: {data['pe_ratio']} | RSI: {data['rsi']} | MACD: {data['macd']} | "
+                       f"TARGET: ${data['target']} | 52W: ${data['week_52_low']}-${data['week_52_high']} | "
+                       f"EARNINGS: {data['earnings']}")
+            else:
+                return f"❌ Could not get comprehensive data for {symbol_upper} (not in fallback database)"
+
     except Exception as e:
-        return f"❌ Error getting comprehensive data for {symbol}: {str(e)}"
+        # Exception occurred - try simulated fallback
+        symbol_upper = symbol.upper()
+        if symbol_upper in simulated_data:
+            data = simulated_data[symbol_upper]
+            return (f"⚠️ SIMULATED DATA (API error: {str(e)[:50]}) | "
+                   f"PRICE: ${data['price']:.2f} | VOLUME: {data['volume']:,} | "
+                   f"P/E: {data['pe_ratio']} | RSI: {data['rsi']} | MACD: {data['macd']} | "
+                   f"TARGET: ${data['target']} | 52W: ${data['week_52_low']}-${data['week_52_high']} | "
+                   f"EARNINGS: {data['earnings']}")
+        else:
+            return f"❌ Error getting comprehensive data for {symbol}: {str(e)}"
 def create_organiser_agent(model_client=None):
     if model_client is None:
         model_client = globals().get('model_client')

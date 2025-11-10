@@ -141,16 +141,33 @@ Each agent should respond with their analysis. Start the analysis now."""
                     # Extract final report from ReportAgent
                     if source == 'ReportAgent':
                         final_report = content
-                        # Try to extract recommendation and confidence
-                        if 'BUY' in content.upper():
-                            recommendation = 'BUY'
-                        elif 'SELL' in content.upper():
-                            recommendation = 'SELL'
-                        # Look for confidence percentage
+                        # Try to extract recommendation and confidence using precise regex
                         import re
-                        conf_match = re.search(r'confidence[:\s]+(\d+)%', content, re.IGNORECASE)
+
+                        # Extract recommendation - look for "RECOMMENDATION:" followed by the action
+                        rec_match = re.search(r'RECOMMENDATION:\s*\*?\*?([A-Z]+)\s*[-\s]', content, re.IGNORECASE)
+                        if rec_match:
+                            recommendation = rec_match.group(1).upper()
+                        else:
+                            # Fallback: Check if it explicitly says BUY, SELL, or HOLD near the beginning
+                            first_500 = content[:500].upper()
+                            if 'RECOMMENDATION: BUY' in first_500 or 'RECOMMEND: BUY' in first_500:
+                                recommendation = 'BUY'
+                            elif 'RECOMMENDATION: SELL' in first_500 or 'RECOMMEND: SELL' in first_500:
+                                recommendation = 'SELL'
+                            elif 'RECOMMENDATION: HOLD' in first_500 or 'RECOMMEND: HOLD' in first_500:
+                                recommendation = 'HOLD'
+
+                        # Extract confidence level - look for "CONFIDENCE LEVEL:" followed by percentage
+                        conf_match = re.search(r'CONFIDENCE LEVEL:\s*(\d+)/10', content, re.IGNORECASE)
                         if conf_match:
-                            confidence = int(conf_match.group(1))
+                            # Convert X/10 to percentage
+                            confidence = int(conf_match.group(1)) * 10
+                        else:
+                            # Look for direct percentage
+                            conf_match = re.search(r'confidence[:\s]+(\d+)%', content, re.IGNORECASE)
+                            if conf_match:
+                                confidence = int(conf_match.group(1))
 
                 # Check for completion markers
                 if any(marker in content for marker in [

@@ -119,12 +119,12 @@ if "data_source" in result and result["data_source"] == "demo":
 
 ---
 
-### 4. 🔍 Alpha Vantage API (Real Market Data)
-**Location:** AutoGen agents (6-Agent Stock Analysis)  
-**Status:** ✅ **REAL DATA**
+### 4. 🔍 Alpha Vantage API (Real Market Data with Simulated Fallback)
+**Location:** AutoGen agents (6-Agent Stock Analysis)
+**Status:** ✅ **REAL DATA** with ⚠️ **SIMULATED FALLBACK**
 
 **Primary Use:**
-- `src/agents/autogen/data_analyst.py` → `get_comprehensive_stock_data()`
+- `src/agents/autogen/research_agent.py` → `get_comprehensive_stock_data()`
 - 6-Agent Stock Analysis feature
 
 **Data Provided:**
@@ -139,6 +139,21 @@ if "data_source" in result and result["data_source"] == "demo":
 **Rate Limits:**
 - Free tier: 25 requests/day
 - Premium: 75+ requests/day
+
+**Simulated Fallback (Lines 145-182):**
+When Alpha Vantage API fails or rate limit is exceeded, the system falls back to simulated data for:
+- AAPL, GOOGL, MSFT, TSLA, AMZN, NVDA, META
+
+**Fallback Trigger:**
+1. **Primary:** Try Alpha Vantage API
+2. **Fallback:** Use simulated_data dictionary
+3. **Final:** Return error for unknown symbols
+
+**Detection:**
+```python
+if "⚠️ SIMULATED DATA" in result:
+    print("Using fallback data")
+```
 
 ---
 

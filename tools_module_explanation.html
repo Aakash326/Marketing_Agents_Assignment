@@ -1,0 +1,1272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tools Module - Complete Guide</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .section {
+            margin-bottom: 50px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .section h2 {
+            color: #fa709a;
+            font-size: 2em;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #fee140;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .section h3 {
+            color: #fa709a;
+            font-size: 1.5em;
+            margin: 25px 0 15px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .icon {
+            font-size: 1.5em;
+        }
+
+        .tool-card {
+            background: linear-gradient(135deg, #fff5f7 0%, #ffe8ec 100%);
+            padding: 25px;
+            margin: 20px 0;
+            border-radius: 10px;
+            border-left: 5px solid #fa709a;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .tool-card:hover {
+            transform: translateX(10px);
+            box-shadow: 0 10px 25px rgba(250, 112, 154, 0.3);
+        }
+
+        .tool-card h4 {
+            color: #fa709a;
+            margin-bottom: 10px;
+            font-size: 1.3em;
+        }
+
+        .tool-signature {
+            background: #2d2d2d;
+            color: #50fa7b;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            margin: 10px 0;
+            overflow-x: auto;
+        }
+
+        .code-block {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            line-height: 1.5;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .code-comment {
+            color: #6272a4;
+        }
+
+        .code-keyword {
+            color: #ff79c6;
+        }
+
+        .code-function {
+            color: #50fa7b;
+        }
+
+        .code-string {
+            color: #f1fa8c;
+        }
+
+        .code-number {
+            color: #bd93f9;
+        }
+
+        .example-box {
+            background: white;
+            border-left: 4px solid #fa709a;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+
+        .example-box h4 {
+            color: #fa709a;
+            margin-bottom: 10px;
+            font-size: 1.2em;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .feature-card {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+
+        .feature-card h4 {
+            color: #fa709a;
+            font-size: 1.3em;
+            margin-bottom: 10px;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: bold;
+            margin: 5px;
+        }
+
+        .badge-portfolio {
+            background: #f093fb;
+            color: white;
+        }
+
+        .badge-market {
+            background: #f5576c;
+            color: white;
+        }
+
+        .badge-validator {
+            background: #667eea;
+            color: white;
+        }
+
+        .badge-sec {
+            background: #f59e0b;
+            color: white;
+        }
+
+        .badge-rag {
+            background: #8b5cf6;
+            color: white;
+        }
+
+        .badge-knowledge {
+            background: #06b6d4;
+            color: white;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        th {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: bold;
+        }
+
+        td {
+            padding: 15px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        tr:hover {
+            background: #fff5f7;
+        }
+
+        .data-box {
+            background: #f3f4f6;
+            border: 2px dashed #fa709a;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+
+        footer {
+            background: #1f2937;
+            color: white;
+            text-align: center;
+            padding: 30px;
+            margin-top: 50px;
+        }
+
+        .highlight {
+            background: #fef3c7;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-weight: bold;
+        }
+
+        .workflow-diagram {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            margin: 20px 0;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .flow-step {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            color: white;
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 10px;
+            position: relative;
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+        }
+
+        .flow-step:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(250, 112, 154, 0.4);
+        }
+
+        .flow-step::after {
+            content: '↓';
+            position: absolute;
+            bottom: -35px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 2em;
+            color: #fa709a;
+        }
+
+        .flow-step:last-child::after {
+            content: '';
+        }
+
+        .flow-step h4 {
+            font-size: 1.3em;
+            margin-bottom: 10px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .section {
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        .module-overview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .module-box {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            transition: transform 0.3s;
+        }
+
+        .module-box:hover {
+            transform: scale(1.05);
+        }
+
+        .module-box h5 {
+            color: #1f2937;
+            font-size: 1.1em;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🛠️ Tools Module - Complete Guide</h1>
+            <p>Deep Dive into All 6 Tool Files & Their Functions</p>
+        </header>
+
+        <div class="content">
+            <!-- MODULE OVERVIEW -->
+            <div class="section">
+                <h2><span class="icon">📦</span> Tools Module Overview</h2>
+                <p>The <code>src/tools/</code> directory contains <strong>6 specialized tool files</strong> that provide all the data-fetching, validation, and knowledge management capabilities for the Portfolio Intelligence System.</p>
+
+                <div class="module-overview">
+                    <div class="module-box">
+                        <h5>📁 portfolio_tools.py</h5>
+                        <p>4 functions</p>
+                        <span class="badge badge-portfolio">Portfolio Data</span>
+                    </div>
+                    <div class="module-box">
+                        <h5>📈 market_tools.py</h5>
+                        <p>5 functions</p>
+                        <span class="badge badge-market">Market Data</span>
+                    </div>
+                    <div class="module-box">
+                        <h5>✅ validator_tools.py</h5>
+                        <p>4 functions</p>
+                        <span class="badge badge-validator">Validation</span>
+                    </div>
+                    <div class="module-box">
+                        <h5>📄 sec_tools.py</h5>
+                        <p>3 functions</p>
+                        <span class="badge badge-sec">SEC Filings</span>
+                    </div>
+                    <div class="module-box">
+                        <h5>🧠 rag_tools.py</h5>
+                        <p>1 class, 6 methods</p>
+                        <span class="badge badge-rag">RAG System</span>
+                    </div>
+                    <div class="module-box">
+                        <h5>📚 knowledge_ingestion.py</h5>
+                        <p>3 functions</p>
+                        <span class="badge badge-knowledge">Data Ingestion</span>
+                    </div>
+                </div>
+
+                <h3>🎯 Total Toolkit</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Category</th>
+                            <th>File</th>
+                            <th>Functions</th>
+                            <th>Purpose</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><span class="badge badge-portfolio">Portfolio</span></td>
+                            <td>portfolio_tools.py</td>
+                            <td>4</td>
+                            <td>Load & format client portfolio data from Excel</td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge badge-market">Market</span></td>
+                            <td>market_tools.py</td>
+                            <td>5</td>
+                            <td>Fetch real-time stock prices & news from Yahoo Finance</td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge badge-validator">Validation</span></td>
+                            <td>validator_tools.py</td>
+                            <td>4</td>
+                            <td>Detect ambiguity, check data, prevent hallucinations</td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge badge-sec">SEC</span></td>
+                            <td>sec_tools.py</td>
+                            <td>3</td>
+                            <td>Download & extract SEC filings (10-K, 10-Q, 8-K)</td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge badge-rag">RAG</span></td>
+                            <td>rag_tools.py</td>
+                            <td>6 methods</td>
+                            <td>Vector database for semantic search</td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge badge-knowledge">Ingestion</span></td>
+                            <td>knowledge_ingestion.py</td>
+                            <td>3</td>
+                            <td>Populate knowledge base with SEC filings</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- PORTFOLIO TOOLS -->
+            <div class="section">
+                <h2><span class="icon">📁</span> portfolio_tools.py - Portfolio Data Management</h2>
+                <p><strong>Purpose:</strong> Load, process, and format client portfolio data from Excel files.</p>
+                <p><strong>Total Functions:</strong> 4</p>
+
+                <div class="tool-card">
+                    <h4>🔧 Function 1: load_portfolio_data()</h4>
+                    <div class="tool-signature">
+load_portfolio_data(excel_path: str, client_id: str) → Dict
+                    </div>
+                    <p><strong>Purpose:</strong> Loads all holdings for a specific client from Excel file</p>
+                    <p><strong>Input Parameters:</strong></p>
+                    <ul style="list-style-position: inside; margin-left: 20px;">
+                        <li><code>excel_path</code>: Path to portfolios.xlsx (e.g., "portfolios.xlsx")</li>
+                        <li><code>client_id</code>: Client identifier (e.g., "CLT-001")</li>
+                    </ul>
+                    <p><strong>How It Works:</strong></p>
+                    <div class="code-block">
+<span class="code-comment"># 1. Read Excel file using pandas</span>
+df = pd.<span class="code-function">read_excel</span>(excel_path)
+
+<span class="code-comment"># 2. Filter for specific client</span>
+client_portfolio = df[df[<span class="code-string">'client_id'</span>] == client_id]
+
+<span class="code-comment"># 3. Convert each row to dictionary</span>
+holdings = []
+<span class="code-keyword">for</span> _, row <span class="code-keyword">in</span> client_portfolio.<span class="code-function">iterrows</span>():
+    holdings.<span class="code-function">append</span>({
+        <span class="code-string">"symbol"</span>: row[<span class="code-string">'symbol'</span>],
+        <span class="code-string">"quantity"</span>: row[<span class="code-string">'quantity'</span>],
+        <span class="code-string">"purchase_price"</span>: row[<span class="code-string">'purchase_price'</span>],
+        <span class="code-string">"security_name"</span>: row[<span class="code-string">'security_name'</span>],
+        <span class="code-string">"asset_class"</span>: row[<span class="code-string">'asset_class'</span>],
+        <span class="code-string">"sector"</span>: row[<span class="code-string">'sector'</span>]
+    })
+
+<span class="code-keyword">return</span> {
+    <span class="code-string">"client_id"</span>: client_id,
+    <span class="code-string">"holdings"</span>: holdings,
+    <span class="code-string">"total_holdings"</span>: <span class="code-function">len</span>(holdings)
+}
+                    </div>
+                    <p><strong>Output Example:</strong></p>
+                    <div class="data-box">
+{
+    "client_id": "CLT-001",
+    "holdings": [
+        {
+            "symbol": "AAPL",
+            "quantity": 50,
+            "purchase_price": 150.25,
+            "security_name": "Apple Inc.",
+            "asset_class": "Stock",
+            "sector": "Technology"
+        },
+        ...
+    ],
+    "total_holdings": 5
+}
+                    </div>
+                </div>
+
+                <div class="tool-card">
+                    <h4>🔧 Function 2: get_client_holdings()</h4>
+                    <div class="tool-signature">
+get_client_holdings(portfolio_data: Dict) → List[str]
+                    </div>
+                    <p><strong>Purpose:</strong> Extracts just the ticker symbols from portfolio</p>
+                    <p><strong>Input:</strong> Portfolio dictionary from load_portfolio_data()</p>
+                    <p><strong>Output:</strong> List of ticker symbols</p>
+                    <div class="code-block">
+<span class="code-comment"># Simple list comprehension</span>
+tickers = [
+    holding[<span class="code-string">"symbol"</span>] 
+    <span class="code-keyword">for</span> holding <span class="code-keyword">in</span> portfolio_data[<span class="code-string">"holdings"</span>]
+]
+
+<span class="code-comment"># Returns: ["AAPL", "TSLA", "MSFT", "GOOGL", "BND"]</span>
+                    </div>
+                    <p><strong>Why Important:</strong> Market Agent uses this list to know which stocks to fetch prices for</p>
+                </div>
+
+                <div class="tool-card">
+                    <h4>🔧 Function 3: calculate_portfolio_summary()</h4>
+                    <div class="tool-signature">
+calculate_portfolio_summary(portfolio_data: Dict, current_prices: Dict) → Dict
+                    </div>
+                    <p><strong>Purpose:</strong> Calculates gains/losses by comparing purchase price to current price</p>
+                    <p><strong>Calculation Formula:</strong></p>
+                    <div class="code-block">
+<span class="code-comment"># For each holding:</span>
+cost_basis = quantity * purchase_price
+current_value = quantity * current_price
+
+gain_loss = current_value - cost_basis
+gain_loss_pct = (gain_loss / cost_basis) * <span class="code-number">100</span>
+
+<span class="code-comment"># Example:</span>
+<span class="code-comment"># Bought 50 AAPL at $150.25 = $7,512.50</span>
+<span class="code-comment"># Now worth 50 AAPL at $178.72 = $8,936.00</span>
+<span class="code-comment"># Gain: $1,423.50 (18.95%)</span>
+                    </div>
+                    <p><strong>Output:</strong></p>
+                    <div class="data-box">
+{
+    "total_value": 25450.50,
+    "total_cost": 20000.00,
+    "total_gain_loss": 5450.50,
+    "total_gain_loss_pct": 27.25,
+    "holdings_summary": [...]
+}
+                    </div>
+                </div>
+
+                <div class="tool-card">
+                    <h4>🔧 Function 4: format_portfolio_for_llm()</h4>
+                    <div class="tool-signature">
+format_portfolio_for_llm(portfolio_data: Dict) → str
+                    </div>
+                    <p><strong>Purpose:</strong> Converts portfolio dictionary into human-readable text for LLM</p>
+                    <p><strong>Output Format:</strong></p>
+                    <div class="data-box">
+Portfolio for CLT-001:
+
+Total Holdings: 5
+Total Portfolio Value: $25,450.50
+
+Holdings Breakdown:
+1. Apple Inc. (AAPL)
+   - Asset Class: Stock
+   - Sector: Technology
+   - Quantity: 50
+   - Purchase Price: $150.25
+   - Holding Value: $7,512.50
+
+2. Tesla Inc. (TSLA)
+   ...
+                    </div>
+                </div>
+            </div>
+
+            <!-- MARKET TOOLS -->
+            <div class="section">
+                <h2><span class="icon">📈</span> market_tools.py - Real-Time Market Data</h2>
+                <p><strong>Purpose:</strong> Fetch real-time stock prices, news, and market data from Yahoo Finance API.</p>
+                <p><strong>Total Functions:</strong> 5</p>
+                <p><strong>Data Source:</strong> yfinance library (Yahoo Finance API)</p>
+
+                <div class="tool-card">
+                    <h4>🔧 Function 1: get_stock_price()</h4>
+                    <div class="tool-signature">
+get_stock_price(ticker: str) → Dict
+                    </div>
+                    <p><strong>Purpose:</strong> Fetches comprehensive price data for a single stock</p>
+                    <p><strong>What It Fetches:</strong></p>
+                    <ul style="list-style-position: inside; margin-left: 20px;">
+                        <li>Current price & previous close</li>
+                        <li>Day change ($ and %)</li>
+                        <li>YTD return</li>
+                        <li>52-week high/low</li>
+                        <li>Market cap, sector, industry</li>
+                    </ul>
+                    <p><strong>Implementation:</strong></p>
+                    <div class="code-block">
+<span class="code-keyword">import</span> yfinance <span class="code-keyword">as</span> yf
+
+<span class="code-comment"># 1. Create Ticker object</span>
+stock = yf.<span class="code-function">Ticker</span>(ticker)
+
+<span class="code-comment"># 2. Get 5-day historical data</span>
+hist = stock.<span class="code-function">history</span>(period=<span class="code-string">"5d"</span>)
+current_price = hist[<span class="code-string">'Close'</span>].<span class="code-function">iloc</span>[-<span class="code-number">1</span>]
+previous_close = hist[<span class="code-string">'Close'</span>].<span class="code-function">iloc</span>[-<span class="code-number">2</span>]
+
+<span class="code-comment"># 3. Calculate changes</span>
+day_change = current_price - previous_close
+day_change_pct = (day_change / previous_close) * <span class="code-number">100</span>
+
+<span class="code-comment"># 4. Get YTD performance</span>
+ytd_hist = stock.<span class="code-function">history</span>(period=<span class="code-string">"ytd"</span>)
+ytd_return = ((current_price - ytd_hist[<span class="code-string">'Close'</span>][<span class="code-number">0</span>]) / ytd_hist[<span class="code-string">'Close'</span>][<span class="code-number">0</span>]) * <span class="code-number">100</span>
+                    </div>
+                    <p><strong>Fallback Mechanism:</strong></p>
+                    <div class="data-box">
+Try 1: yfinance historical data (5 days)
+  ↓ If fails
+Try 2: yfinance info API
+  ↓ If fails
+Try 3: Demo prices dictionary (12 common stocks)
+  ↓ If fails
+Return: Error message
+                    </div>
+                </div>
+
+                <div class="tool-card">
+                    <h4>🔧 Function 2: get_multiple_stock_prices()</h4>
+                    <div class="tool-signature">
+get_multiple_stock_prices(tickers: List[str]) → Dict[str, Dict]
+                    </div>
+                    <p><strong>Purpose:</strong> Efficiently fetches prices for multiple stocks in parallel</p>
+                    <p><strong>Performance Optimization:</strong></p>
+                    <div class="code-block">
+<span class="code-keyword">from</span> concurrent.futures <span class="code-keyword">import</span> ThreadPoolExecutor
+
+<span class="code-comment"># Parallel execution with max 5 workers</span>
+<span class="code-keyword">with</span> <span class="code-function">ThreadPoolExecutor</span>(max_workers=<span class="code-number">5</span>) <span class="code-keyword">as</span> executor:
+    future_to_ticker = {
+        executor.<span class="code-function">submit</span>(get_stock_price, ticker): ticker 
+        <span class="code-keyword">for</span> ticker <span class="code-keyword">in</span> tickers
+    }
+    
+    <span class="code-keyword">for</span> future <span class="code-keyword">in</span> <span class="code-function">as_completed</span>(future_to_ticker):
+        ticker = future_to_ticker[future]
+        results[ticker] = future.<span class="code-function">result</span>()
+
+<span class="code-comment"># ⚡ 5 stocks in ~1 second instead of 5 seconds sequentially!</span>
+                    </div>
+                </div>
+
+                <div class="tool-card">
+                    <h4>🔧 Function 3: search_stock_news()</h4>
+                    <div class="tool-signature">
+search_stock_news(ticker: str, query: Optional[str]) → List[Dict]
+                    </div>
+                    <p><strong>Purpose:</strong> Fetches latest news articles about a stock</p>
+                    <p><strong>Returns:</strong> Up to 5 most recent news items</p>
+                    <div class="data-box">
+[
+    {
+        "title": "Apple announces new AI chip for iPhone",
+        "publisher": "Reuters",
+        "link": "https://...",
+        "published": "2024-11-10 14:30:00"
+    },
+    ...
+]
+                    </div>
+                </div>
+
+                <div class="tool-card">
+                    <h4>🔧 Function 4: format_market_data_for_llm()</h4>
+                    <div class="tool-signature">
+format_market_data_for_llm(market_data: Dict) → str
+                    </div>
+                    <p><strong>Purpose:</strong> Converts market data dictionary into readable text</p>
+                    <p><strong>Output:</strong></p>
+                    <div class="data-box">
+Market Data:
+
+Apple Inc. (AAPL):
+  - Current Price: $178.72
+  - Day Change: +2.30 (+1.30%)
+  - YTD Return: +45.67%
+  - 52-Week Range: $124.17 - $199.62
+  - Sector: Technology
+                    </div>
+                </div>
+
+                <div class="tool-card">
+                    <h4>🔧 Function 5: format_news_for_llm()</h4>
+                    <div class="tool-signature">
+format_news_for_llm(news_data: Dict[str, List[Dict]]) → str
+                    </div>
+                    <p><strong>Purpose:</strong> Formats news articles into readable text</p>
+                </div>
+            </div>
+
+            <!-- VALIDATOR TOOLS -->
+            <div class="section">
+                <h2><span class="icon">✅</span> validator_tools.py - Quality Control & Validation</h2>
+                <p><strong>Purpose:</strong> Detect ambiguous queries, check data sufficiency, prevent AI hallucinations.</p>
+                <p><strong>Total Functions:</strong> 4</p>
+
+                <div class="tool-card">
+                    <h4>🔧 Function 1: detect_ambiguity()</h4>
+                    <div class="tool-signature">
+detect_ambiguity(query: str, conversation_history: List[Dict]) → Tuple[bool, str]
+                    </div>
+                    <p><strong>Detects:</strong></p>
+                    <ul style="list-style-position: inside; margin-left: 20px;">
+                        <li>Vague pronouns: "it", "that stock", "that one"</li>
+                        <li>Relative terms: "best", "worst" (without metric)</li>
+                        <li>Time references: "recent", "lately" (without timeframe)</li>
+                        <li>Incomplete comparisons: "compared to" without both items</li>
+                    </ul>
+                    <p><strong>Example:</strong></p>
+                    <div class="data-box">
+Query: "Show me the best stock"
+Result: (True, "Best by what metric? (highest return, highest value, lowest risk?)")
+                    </div>
+                </div>
+
+                <div class="tool-card">
+                    <h4>🔧 Function 2: check_data_sufficiency()</h4>
+                    <div class="tool-signature">
+check_data_sufficiency(query: str, portfolio_data: Dict, market_data: Dict) → Tuple[bool, str]
+                    </div>
+                    <p><strong>Checks:</strong></p>
+                    <ul style="list-style-position: inside; margin-left: 20px;">
+                        <li>Missing portfolio data for portfolio queries</li>
+                        <li>Missing market data for price queries</li>
+                        <li>Unknown tickers not in any data source</li>
+                    </ul>
+                </div>
+
+                <div class="tool-card">
+                    <h4>🔧 Function 3: enhanced_fact_check()</h4>
+                    <div class="tool-signature">
+enhanced_fact_check(response: str, portfolio_data: Dict, market_data: Dict) → Dict
+                    </div>
+                    <p><strong>Detects Hallucinations:</strong></p>
+                    <ul style="list-style-position: inside; margin-left: 20px;">
+                        <li>Unknown tickers mentioned (not in data)</li>
+                        <li>Price accuracy (±50% tolerance)</li>
+                        <li>Contradictory percentages</li>
+                    </ul>
+                    <p><strong>Smart Filtering:</strong> Ignores 200+ common English words (THE, AND, FOR, etc.)</p>
+                </div>
+
+                <div class="tool-card">
+                    <h4>🔧 Function 4: validate_response()</h4>
+                    <div class="tool-signature">
+validate_response(response: str, query: str, data_sources: Dict) → Dict
+                    </div>
+                    <p><strong>Overall Quality Check:</strong></p>
+                    <ul style="list-style-position: inside; margin-left: 20px;">
+                        <li>Response length check</li>
+                        <li>Vague statement detection</li>
+                        <li>Confidence scoring (0.0 to 1.0)</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- SEC TOOLS -->
+            <div class="section">
+                <h2><span class="icon">📄</span> sec_tools.py - SEC Filings Management</h2>
+                <p><strong>Purpose:</strong> Download and extract information from SEC filings (10-K, 10-Q, 8-K).</p>
+                <p><strong>Total Functions:</strong> 3</p>
+                <p><strong>Library Used:</strong> sec-edgar-downloader</p>
+
+                <div class="tool-card">
+                    <h4>🔧 Function 1: fetch_latest_filing()</h4>
+                    <div class="tool-signature">
+fetch_latest_filing(ticker: str, filing_type: str = "10-K") → Dict
+                    </div>
+                    <p><strong>Purpose:</strong> Downloads the latest SEC filing for a company</p>
+                    <p><strong>Supported Filing Types:</strong></p>
+                    <ul style="list-style-position: inside; margin-left: 20px;">
+                        <li><strong>10-K:</strong> Annual report (comprehensive company info)</li>
+                        <li><strong>10-Q:</strong> Quarterly report</li>
+                        <li><strong>8-K:</strong> Current events report</li>
+                    </ul>
+                    <p><strong>How It Works:</strong></p>
+                    <div class="code-block">
+<span class="code-keyword">from</span> sec_edgar_downloader <span class="code-keyword">import</span> Downloader
+
+<span class="code-comment"># 1. Create downloader</span>
+dl = <span class="code-function">Downloader</span>(<span class="code-string">"PortfolioIntelligence"</span>, <span class="code-string">"contact@example.com"</span>, <span class="code-string">"sec_filings"</span>)
+
+<span class="code-comment"># 2. Download filing</span>
+dl.<span class="code-function">get</span>(filing_type, ticker, limit=<span class="code-number">1</span>)
+
+<span class="code-comment"># 3. Read filing text</span>
+filing_path = f<span class="code-string">"sec_filings/sec-edgar-filings/{ticker}/{filing_type}"</span>
+<span class="code-keyword">with</span> <span class="code-function">open</span>(filing_file, <span class="code-string">'r'</span>) <span class="code-keyword">as</span> f:
+    text = f.<span class="code-function">read</span>()
+
+<span class="code-keyword">return</span> {
+    <span class="code-string">"ticker"</span>: ticker,
+    <span class="code-string">"filing_type"</span>: filing_type,
+    <span class="code-string">"text"</span>: text[:<span class="code-number">50000</span>],  <span class="code-comment"># First 50k chars</span>
+    <span class="code-string">"success"</span>: <span class="code-keyword">True</span>
+}
+                    </div>
+                </div>
+
+                <div class="tool-card">
+                    <h4>🔧 Function 2: extract_risk_factors()</h4>
+                    <div class="tool-signature">
+extract_risk_factors(filing_text: str) → str
+                    </div>
+                    <p><strong>Purpose:</strong> Extracts "Risk Factors" section from SEC filing</p>
+                    <p><strong>Search Strategy:</strong></p>
+                    <div class="code-block">
+<span class="code-comment"># Start markers (find first occurrence)</span>
+start_markers = [<span class="code-string">"RISK FACTORS"</span>, <span class="code-string">"Risk Factors"</span>, <span class="code-string">"ITEM 1A"</span>]
+
+<span class="code-comment"># End markers (find first after start)</span>
+end_markers = [<span class="code-string">"ITEM 1B"</span>, <span class="code-string">"ITEM 2"</span>, <span class="code-string">"Unresolved Staff Comments"</span>]
+
+<span class="code-comment"># Extract section between markers</span>
+risk_section = filing_text[start_idx:end_idx]
+
+<span class="code-comment"># Return first 5000 chars</span>
+<span class="code-keyword">return</span> risk_section[:<span class="code-number">5000</span>]
+                    </div>
+                </div>
+
+                <div class="tool-card">
+                    <h4>🔧 Function 3: format_sec_data_for_llm()</h4>
+                    <div class="tool-signature">
+format_sec_data_for_llm(sec_data: Dict) → str
+                    </div>
+                    <p><strong>Purpose:</strong> Formats SEC filing data for LLM consumption</p>
+                    <p><strong>Output Format:</strong></p>
+                    <div class="data-box">
+SEC Filing Risk Factors:
+============================================================
+
+AAPL - 10-K Risk Factors:
+------------------------------------------------------------
+We face intense competition in markets where we...
+(first 1000 chars)...
+                    </div>
+                </div>
+            </div>
+
+            <!-- RAG TOOLS -->
+            <div class="section">
+                <h2><span class="icon">🧠</span> rag_tools.py - Vector Database & Semantic Search</h2>
+                <p><strong>Purpose:</strong> Store documents in vector database and enable semantic search.</p>
+                <p><strong>Technology:</strong> ChromaDB with Sentence Transformers</p>
+                <p><strong>Class:</strong> SimpleKnowledgeBase (6 methods)</p>
+
+                <div class="tool-card">
+                    <h4>📦 Class: SimpleKnowledgeBase</h4>
+                    <p><strong>What It Does:</strong> Wrapper around ChromaDB for easy document storage and retrieval</p>
+                    <p><strong>Initialization:</strong></p>
+                    <div class="code-block">
+<span class="code-keyword">from</span> chromadb.utils <span class="code-keyword">import</span> embedding_functions
+
+<span class="code-comment"># 1. Create embeddings function (free, no API key)</span>
+embedding_fn = embedding_functions.<span class="code-function">SentenceTransformerEmbeddingFunction</span>(
+    model_name=<span class="code-string">"all-MiniLM-L6-v2"</span>
+)
+
+<span class="code-comment"># 2. Create/load ChromaDB client</span>
+client = chromadb.<span class="code-function">PersistentClient</span>(path=persist_directory)
+
+<span class="code-comment"># 3. Get or create collection</span>
+collection = client.<span class="code-function">get_or_create_collection</span>(
+    name=<span class="code-string">"portfolio_knowledge"</span>,
+    embedding_function=embedding_fn
+)
+                    </div>
+                </div>
+
+                <div class="tool-card">
+                    <h4>🔧 Method 1: add_document()</h4>
+                    <div class="tool-signature">
+add_document(text: str, metadata: Dict, doc_id: str) → bool
+                    </div>
+                    <p><strong>Purpose:</strong> Add a document to the knowledge base</p>
+                    <p><strong>Chunking Strategy:</strong></p>
+                    <div class="code-block">
+<span class="code-comment"># Split long documents into 1000-char chunks</span>
+max_chunk_size = <span class="code-number">1000</span>
+<span class="code-keyword">if</span> <span class="code-function">len</span>(text) > max_chunk_size:
+    chunks = [text[i:i+max_chunk_size] <span class="code-keyword">for</span> i <span class="code-keyword">in</span> <span class="code-function">range</span>(<span class="code-number">0</span>, <span class="code-function">len</span>(text), max_chunk_size)]
+<span class="code-keyword">else</span>:
+    chunks = [text]
+
+<span class="code-comment"># Add each chunk (limit 10 per document)</span>
+<span class="code-keyword">for</span> i, chunk <span class="code-keyword">in</span> <span class="code-function">enumerate</span>(chunks[:<span class="code-number">10</span>]):
+    chunk_id = f<span class="code-string">"{doc_id}_chunk_{i}"</span>
+    collection.<span class="code-function">add</span>(
+        documents=[chunk],
+        metadatas=[metadata],
+        ids=[chunk_id]
+    )
+                    </div>
+                </div>
+
+                <div class="tool-card">
+                    <h4>🔧 Method 2: search()</h4>
+                    <div class="tool-signature">
+search(query: str, n_results: int = 5) → List[Dict]
+                    </div>
+                    <p><strong>Purpose:</strong> Semantic search in knowledge base</p>
+                    <p><strong>How It Works:</strong></p>
+                    <div class="code-block">
+<span class="code-comment"># 1. Query converts to embedding automatically</span>
+results = collection.<span class="code-function">query</span>(
+    query_texts=[query],
+    n_results=n_results
+)
+
+<span class="code-comment"># 2. Format results</span>
+documents = []
+<span class="code-keyword">for</span> i, doc <span class="code-keyword">in</span> <span class="code-function">enumerate</span>(results[<span class="code-string">'documents'</span>][<span class="code-number">0</span>]):
+    documents.<span class="code-function">append</span>({
+        <span class="code-string">'text'</span>: doc,
+        <span class="code-string">'metadata'</span>: results[<span class="code-string">'metadatas'</span>][<span class="code-number">0</span>][i]
+    })
+
+<span class="code-keyword">return</span> documents
+                    </div>
+                    <p><strong>Example:</strong></p>
+                    <div class="data-box">
+Query: "What are the main risks for Apple?"
+Results: Top 5 most similar chunks from AAPL 10-K Risk Factors section
+                    </div>
+                </div>
+
+                <div class="tool-card">
+                    <h4>🔧 Method 3: get_stats()</h4>
+                    <div class="tool-signature">
+get_stats() → Dict
+                    </div>
+                    <p><strong>Purpose:</strong> Get knowledge base statistics</p>
+                    <p><strong>Returns:</strong></p>
+                    <div class="data-box">
+{
+    "total_documents": 150,
+    "collection_name": "portfolio_knowledge"
+}
+                    </div>
+                </div>
+
+                <div class="tool-card">
+                    <h4>🔧 Method 4: clear()</h4>
+                    <div class="tool-signature">
+clear() → bool
+                    </div>
+                    <p><strong>Purpose:</strong> Delete all documents and recreate collection</p>
+                </div>
+            </div>
+
+            <!-- KNOWLEDGE INGESTION -->
+            <div class="section">
+                <h2><span class="icon">📚</span> knowledge_ingestion.py - Data Population Scripts</h2>
+                <p><strong>Purpose:</strong> Populate the knowledge base with SEC filings for client portfolios.</p>
+                <p><strong>Total Functions:</strong> 3</p>
+
+                <div class="tool-card">
+                    <h4>🔧 Function 1: ingest_portfolio_sec_filings()</h4>
+                    <div class="tool-signature">
+ingest_portfolio_sec_filings(client_id: str) → None
+                    </div>
+                    <p><strong>Purpose:</strong> Ingest SEC filings for all stocks in a client's portfolio</p>
+                    <p><strong>Workflow:</strong></p>
+                    <div class="workflow-diagram">
+                        <div class="flow-step">
+                            <h4>Step 1: Load Portfolio</h4>
+                            <p>Get all holdings for client (e.g., CLT-001)</p>
+                        </div>
+                        <div class="flow-step">
+                            <h4>Step 2: Extract Tickers</h4>
+                            <p>Get unique stock symbols (skip CASH)</p>
+                        </div>
+                        <div class="flow-step">
+                            <h4>Step 3: Fetch SEC Filings</h4>
+                            <p>Download 10-K for each ticker</p>
+                        </div>
+                        <div class="flow-step">
+                            <h4>Step 4: Store in Knowledge Base</h4>
+                            <p>Add each filing to ChromaDB with metadata</p>
+                        </div>
+                        <div class="flow-step">
+                            <h4>Step 5: Rate Limiting</h4>
+                            <p>Sleep 2 seconds between requests (be nice to SEC servers)</p>
+                        </div>
+                    </div>
+                    <p><strong>Implementation:</strong></p>
+                    <div class="code-block">
+kb = <span class="code-function">SimpleKnowledgeBase</span>()
+
+<span class="code-comment"># Load portfolio</span>
+portfolio = <span class="code-function">load_portfolio_data</span>(<span class="code-string">"portfolios.xlsx"</span>, client_id)
+
+<span class="code-comment"># For each ticker</span>
+<span class="code-keyword">for</span> ticker <span class="code-keyword">in</span> tickers:
+    <span class="code-comment"># Fetch filing</span>
+    filing = <span class="code-function">fetch_latest_filing</span>(ticker, <span class="code-string">"10-K"</span>)
+    
+    <span class="code-keyword">if</span> filing.<span class="code-function">get</span>(<span class="code-string">"success"</span>):
+        <span class="code-comment"># Store in knowledge base</span>
+        kb.<span class="code-function">add_document</span>(
+            text=filing[<span class="code-string">"text"</span>],
+            metadata={
+                <span class="code-string">"type"</span>: <span class="code-string">"sec_filing"</span>,
+                <span class="code-string">"ticker"</span>: ticker,
+                <span class="code-string">"filing_type"</span>: <span class="code-string">"10-K"</span>
+            },
+            doc_id=f<span class="code-string">"sec_{ticker}_10K"</span>
+        )
+    
+    time.<span class="code-function">sleep</span>(<span class="code-number">2</span>)  <span class="code-comment"># Rate limiting</span>
+                    </div>
+                </div>
+
+                <div class="tool-card">
+                    <h4>🔧 Function 2: ingest_multiple_clients()</h4>
+                    <div class="tool-signature">
+ingest_multiple_clients(client_ids: List[str]) → None
+                    </div>
+                    <p><strong>Purpose:</strong> Batch ingestion for multiple clients</p>
+                    <p><strong>Example Usage:</strong></p>
+                    <div class="code-block">
+<span class="code-comment"># Ingest for 3 clients</span>
+<span class="code-function">ingest_multiple_clients</span>([<span class="code-string">"CLT-001"</span>, <span class="code-string">"CLT-002"</span>, <span class="code-string">"CLT-003"</span>])
+                    </div>
+                </div>
+
+                <div class="tool-card">
+                    <h4>🔧 Function 3: get_knowledge_base_stats()</h4>
+                    <div class="tool-signature">
+get_knowledge_base_stats() → None
+                    </div>
+                    <p><strong>Purpose:</strong> Display knowledge base statistics</p>
+                    <p><strong>Output:</strong></p>
+                    <div class="data-box">
+============================================================
+Knowledge Base Statistics
+============================================================
+Collection: portfolio_knowledge
+Total Documents: 150
+============================================================
+                    </div>
+                </div>
+            </div>
+
+            <!-- TOOLS COMPARISON -->
+            <div class="section">
+                <h2><span class="icon">⚖️</span> Tools Comparison & Integration</h2>
+
+                <h3>🔄 How Tools Work Together</h3>
+                <div class="workflow-diagram">
+                    <div class="flow-step" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                        <h4>1️⃣ Portfolio Tools Load Client Data</h4>
+                        <p>load_portfolio_data() → get_client_holdings() → ["AAPL", "TSLA", "MSFT"]</p>
+                    </div>
+
+                    <div class="flow-step" style="background: linear-gradient(135deg, #f5576c 0%, #fa709a 100%);">
+                        <h4>2️⃣ Market Tools Fetch Current Prices</h4>
+                        <p>get_multiple_stock_prices() → parallel API calls → current prices</p>
+                    </div>
+
+                    <div class="flow-step" style="background: linear-gradient(135deg, #fa709a 0%, #f59e0b 100%);">
+                        <h4>3️⃣ Portfolio Tools Calculate Returns</h4>
+                        <p>calculate_portfolio_summary() → purchase vs current → gains/losses</p>
+                    </div>
+
+                    <div class="flow-step" style="background: linear-gradient(135deg, #f59e0b 0%, #667eea 100%);">
+                        <h4>4️⃣ SEC Tools Provide Context</h4>
+                        <p>fetch_latest_filing() → extract_risk_factors() → company risks</p>
+                    </div>
+
+                    <div class="flow-step" style="background: linear-gradient(135deg, #667eea 0%, #8b5cf6 100%);">
+                        <h4>5️⃣ RAG Tools Enable Search</h4>
+                        <p>search("Apple risks") → relevant SEC filing chunks</p>
+                    </div>
+
+                    <div class="flow-step" style="background: linear-gradient(135deg, #8b5cf6 0%, #764ba2 100%);">
+                        <h4>6️⃣ Validator Tools Check Quality</h4>
+                        <p>detect_ambiguity() → enhanced_fact_check() → validated response</p>
+                    </div>
+                </div>
+
+                <h3>📊 Complete Data Flow</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Step</th>
+                            <th>Tool File</th>
+                            <th>Function Called</th>
+                            <th>Output</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1</td>
+                            <td>portfolio_tools.py</td>
+                            <td>load_portfolio_data()</td>
+                            <td>Holdings list with purchase prices</td>
+                        </tr>
+                        <tr>
+                            <td>2</td>
+                            <td>portfolio_tools.py</td>
+                            <td>get_client_holdings()</td>
+                            <td>["AAPL", "TSLA", "MSFT"]</td>
+                        </tr>
+                        <tr>
+                            <td>3</td>
+                            <td>market_tools.py</td>
+                            <td>get_multiple_stock_prices()</td>
+                            <td>Current prices for all tickers</td>
+                        </tr>
+                        <tr>
+                            <td>4</td>
+                            <td>portfolio_tools.py</td>
+                            <td>calculate_portfolio_summary()</td>
+                            <td>Total value, gains/losses</td>
+                        </tr>
+                        <tr>
+                            <td>5</td>
+                            <td>sec_tools.py</td>
+                            <td>fetch_latest_filing()</td>
+                            <td>10-K filing text</td>
+                        </tr>
+                        <tr>
+                            <td>6</td>
+                            <td>rag_tools.py</td>
+                            <td>search()</td>
+                            <td>Relevant risk factor chunks</td>
+                        </tr>
+                        <tr>
+                            <td>7</td>
+                            <td>validator_tools.py</td>
+                            <td>enhanced_fact_check()</td>
+                            <td>Validation results</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- KEY TAKEAWAYS -->
+            <div class="section">
+                <h2><span class="icon">💡</span> Key Takeaways</h2>
+
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <h4>📁 Portfolio Tools</h4>
+                        <p><strong>4 functions</strong></p>
+                        <p>Load from Excel, extract tickers, calculate returns, format for LLM</p>
+                        <span class="badge badge-portfolio">Data Loading</span>
+                    </div>
+
+                    <div class="feature-card">
+                        <h4>📈 Market Tools</h4>
+                        <p><strong>5 functions</strong></p>
+                        <p>Real-time prices, news, parallel fetching, demo fallback</p>
+                        <span class="badge badge-market">API Integration</span>
+                    </div>
+
+                    <div class="feature-card">
+                        <h4>✅ Validator Tools</h4>
+                        <p><strong>4 functions</strong></p>
+                        <p>Ambiguity detection, data checks, hallucination prevention</p>
+                        <span class="badge badge-validator">Quality Control</span>
+                    </div>
+
+                    <div class="feature-card">
+                        <h4>📄 SEC Tools</h4>
+                        <p><strong>3 functions</strong></p>
+                        <p>Download filings, extract risk factors, format for LLM</p>
+                        <span class="badge badge-sec">SEC Integration</span>
+                    </div>
+
+                    <div class="feature-card">
+                        <h4>🧠 RAG Tools</h4>
+                        <p><strong>1 class, 6 methods</strong></p>
+                        <p>Vector database, semantic search, document storage</p>
+                        <span class="badge badge-rag">Knowledge Base</span>
+                    </div>
+
+                    <div class="feature-card">
+                        <h4>📚 Knowledge Ingestion</h4>
+                        <p><strong>3 functions</strong></p>
+                        <p>Batch ingestion, multi-client support, stats reporting</p>
+                        <span class="badge badge-knowledge">Data Pipeline</span>
+                    </div>
+                </div>
+
+                <h3>🎯 Design Principles</h3>
+                <ul style="list-style-position: inside; margin-left: 20px;">
+                    <li><strong>Separation of Concerns:</strong> Each file has a single responsibility</li>
+                    <li><strong>Error Handling:</strong> Every tool includes try/except blocks and fallbacks</li>
+                    <li><strong>Performance:</strong> Parallel execution (ThreadPoolExecutor) for speed</li>
+                    <li><strong>Formatting:</strong> Every data-fetching tool has a format_for_llm() function</li>
+                    <li><strong>Validation:</strong> Multiple layers of quality checks before returning data</li>
+                    <li><strong>Transparency:</strong> Clear indication when using fallback/simulated data</li>
+                </ul>
+            </div>
+        </div>
+
+        <footer>
+            <p><strong>Portfolio Intelligence System</strong></p>
+            <p>Complete Tools Module Documentation</p>
+            <p style="margin-top: 10px; opacity: 0.7;">© 2025 | 6 Tool Files, 20+ Functions, Infinite Possibilities</p>
+        </footer>
+    </div>
+
+    <script>
+        // Add smooth scrolling
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+
+        // Add click animation to tool cards
+        document.querySelectorAll('.tool-card').forEach(card => {
+            card.addEventListener('click', function() {
+                this.style.transform = 'scale(1.02) translateX(10px)';
+                setTimeout(() => {
+                    this.style.transform = '';
+                }, 200);
+            });
+        });
+
+        // Add hover effect to flow steps
+        document.querySelectorAll('.flow-step').forEach(step => {
+            step.addEventListener('click', function() {
+                this.style.transform = 'scale(1.02)';
+                setTimeout(() => {
+                    this.style.transform = '';
+                }, 200);
+            });
+        });
+    </script>
+</body>
+</html>
