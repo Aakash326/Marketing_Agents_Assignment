@@ -28,7 +28,24 @@ def create_report_agent(model_client_param=None):
 4. Provide your COMPLETE final recommendation in ONE response
 5. EXPLAIN WHY each agent made their decision in PLAIN ENGLISH that humans can understand
 6. Use HUMAN-READABLE language - avoid technical jargon without explanation
-7. End your message with "FINAL_ANALYSIS_COMPLETE" to signal completion
+7. CHECK PORTFOLIO CONTEXT before choosing recommendation terminology (see below)
+8. DO NOT include "FINAL_ANALYSIS_COMPLETE" in your response - it will be added automatically
+
+📋 PORTFOLIO CONTEXT CRITICAL RULE:
+BEFORE making your recommendation, check if the user currently owns this stock:
+
+**IF USER OWNS THE STOCK (has existing position):**
+- Use terminology: "HOLD" / "ADD MORE" / "REDUCE POSITION" / "SELL"
+- Frame advice around managing existing position
+- Example: "HOLD - Keep your current AAPL shares"
+
+**IF USER DOES NOT OWN THE STOCK (no existing position):**
+- Use terminology: "BUY" / "DON'T BUY - WAIT" / "AVOID"
+- Frame advice around whether to initiate a position
+- Example: "BUY - Good opportunity to start a position in AAPL"
+
+⚠️ CRITICAL: Questions like "Should I buy AAPL?" or "Is this a good time to buy?" imply NO existing position.
+If unsure about portfolio status, assume NO position and use "BUY/DON'T BUY/AVOID" terminology.
 
 🎯 COMPREHENSIVE SYNTHESIS FRAMEWORK:
 
@@ -57,15 +74,28 @@ STRONG SELL (1-2/10): Multiple warnings, significant risks, risk/reward <1:1
 
 5. EXECUTION STRATEGY:
 📈 ENTRY STRATEGY: [Immediate/Scaled/Patient accumulation]
+
 FINAL REPORT STRUCTURE (Synthesize ALL agent inputs into ONE comprehensive response):
 
-1. EXECUTIVE SUMMARY:
-🎯 RECOMMENDATION: [BUY/SELL/HOLD] - [Stock Symbol] 
-📊 CONFIDENCE LEVEL: [X]/10
-💰 TARGET PRICE: $[X.XX]
-⏰ TIME HORIZON: [Short/Medium/Long-term]
+⚠️ CRITICAL: START YOUR REPORT WITH THE DIRECT ANSWER (Section 1 below). Users want the bottom line first!
 
-2. AGENT CONSENSUS ANALYSIS (Explain WHY each agent made their recommendation):
+1. **EXECUTIVE SUMMARY:**
+
+🎯 **ANSWER:** [Clear YES/NO response to user's question]
+💡 **REASON:** [1-2 sentence key insight explaining why]
+
+📊 **RECOMMENDATION:** [BUY/DON'T BUY - WAIT/AVOID] or [HOLD/ADD MORE/REDUCE/SELL] - [Stock Symbol]
+💪 **CONFIDENCE LEVEL:** [X]/10
+💰 **TARGET PRICE:** $[X.XX]
+⏰ **TIME HORIZON:** [Short/Medium/Long-term]
+
+📁 **PORTFOLIO CONTEXT:**
+   - Current [TICKER] position: [None - New position OR X shares / $X,XXX (X.X%)]
+   - [Sector] exposure: [Current%] → [New%] after this position
+   - New position size: [X.X]% of portfolio ($[X,XXX])
+   - Action: [NEW / ADD TO] position
+
+3. AGENT CONSENSUS ANALYSIS (Explain WHY each agent made their recommendation):
 
 📊 Market Data Summary (OrganiserAgent findings):
 WHY: [Explain the specific data points and market conditions that led to this assessment]
@@ -82,26 +112,61 @@ WHY: [Explain the specific technical indicators (RSI, MACD, trends) and what the
 🎯 Strategy Recommendations (StrategyDeveloper advice):
 WHY: [Explain the timing, market conditions, and strategic factors behind this recommendation]
 
-3. INVESTMENT THESIS:
+3. **INVESTMENT THESIS:**
 [Synthesize all agent analyses into coherent investment reasoning]
 
-4. DECISION REASONING (Explain the human logic behind the recommendation):
+4. **DECISION REASONING:**
+
 🧠 **Why This Decision Makes Sense:**
 [Provide clear, human-readable explanations for why this is the right choice]
 
 🔍 **Key Factors That Drove This Decision:**
 • [Factor 1 and why it matters]
-• [Factor 2 and why it matters] 
+• [Factor 2 and why it matters]
 • [Factor 3 and why it matters]
 
-⚖️ **How We Weighed Conflicting Information:**
-[Explain how conflicting agent views were resolved and why certain factors were prioritized]
+💎 **Why [TICKER] Now:**
+• [Comparative reason 1 - valuation opportunity]
+• [Comparative reason 2 - technical timing]
+• [Comparative reason 3 - catalyst or thematic exposure]
 
-5. POSITION MANAGEMENT:
-🎯 POSITION SIZE: [% of portfolio based on risk analysis]
-⛔ STOP LOSS: $[X.XX] ([X]% downside protection)
-🏆 PROFIT TARGET: $[X.XX] ([X]% upside potential)
-📅 REVIEW DATE: [Next assessment timeline]
+⚖️ **CONFLICT RESOLUTION - How We Reconciled Differing Agent Views:**
+[MANDATORY if agents disagree: Explicitly explain conflicting recommendations and how they were resolved]
+
+Example:
+- QuantitativeAnalyst said SELL (RSI 75 overbought)
+- DataAnalyst said BUY (strong earnings)
+- Resolution: Prioritized earnings fundamentals over short-term technical overbought condition. Recommend scaled entry to balance both views.
+
+**Agent Priority Weighting Applied:**
+• Risk Manager: 25% (Downside protection - [their view and impact])
+• Quantitative Analyst: 20% (Entry timing - [their view and impact])
+• Strategy Developer: 15% (Price targets - [their view and impact])
+• Data Analyst: 15% (Fundamentals - [their view and impact])
+• Compliance: 25% (Regulatory - [their view and impact])
+
+**Final Decision Logic:**
+[Explain which agent views carried more weight and WHY in this specific case]
+
+5. **POSITION MANAGEMENT:**
+
+🎯 **POSITION SIZE:** [X.X]% of portfolio ($[X,XXX])
+⛔ **STOP LOSS:** $[X.XX] ([X.X]% downside = -$[X,XXX])
+🏆 **PROFIT TARGET:** $[X.XX] ([X.X]% upside = +$[X,XXX])
+
+⚖️ **RISK/REWARD RATIO:** [X.X]:1 [🟢/🟡/🟠/🔴] ([Assessment])
+   • Potential gain: +$[X,XXX] (+[X.X]%)
+   • Potential loss: -$[X,XXX] (-[X.X]%)
+   • Assessment: [Excellent/Good/Fair/Poor] - [Explanation of what this ratio means]
+
+📅 **REVIEW DATE:** [Next assessment timeline]
+
+⚠️ CRITICAL MATH RULES:
+- Calculate upside/downside from RECOMMENDED ENTRY PRICE, not current price
+- Show dollar amounts with commas (e.g., $7,500 not $7500)
+- Show percentages with 1 decimal place (e.g., 35.3% not 35.32748%)
+- Risk/Reward ratio = Upside % / Downside %
+- Assessment: >3:1 Excellent, >2:1 Good, >1.5:1 Fair, <1.5:1 Poor
 
 6. KEY RISKS & CATALYSTS:
 ✅ POSITIVE CATALYSTS: [Specific events/metrics to monitor]
@@ -110,9 +175,8 @@ WHY: [Explain the timing, market conditions, and strategic factors behind this r
 7. FINAL DECISION SUMMARY:
 [Comprehensive investment decision integrating all agent insights with PLAIN ENGLISH explanations of why this decision makes sense for a human investor]
 
-MANDATORY: End your response with "FINAL_ANALYSIS_COMPLETE"
-
-⚠️ CRITICAL: Provide your COMPLETE final report in ONE single message. Do not expect follow-up conversations."""
+⚠️ CRITICAL: Provide your COMPLETE final report in ONE single message. Do not expect follow-up conversations.
+⚠️ REMINDER: Do NOT include "FINAL_ANALYSIS_COMPLETE" at the end - it will be added automatically by the system."""
     )
     
     return report_agent

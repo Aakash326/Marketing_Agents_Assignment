@@ -2,11 +2,11 @@
 
 ## 📋 Overview
 
-This is a comprehensive AI-powered investment analysis platform with **3 main features** and **RAG integration** for market knowledge.
+This is a comprehensive AI-powered investment analysis platform with **4 main features** and **RAG integration** for market knowledge.
 
 ---
 
-## 🎯 Three Core Features
+## 🎯 Four Core Features
 
 ### 1. 📊 Portfolio Intelligence
 **Route:** `/portfolio`  
@@ -120,39 +120,90 @@ if (isGeneralMarket) {
 
 ---
 
+### 4. 🤖 ML Stock Prediction
+**Route:** `/stock-prediction` (future frontend integration)
+**Backend:** Random Forest Machine Learning Model
+**Purpose:** AI-powered stock buy/sell predictions based on technical indicators
+
+**Model Details:**
+- **Algorithm:** Random Forest Classifier
+- **Model Storage:** `saved_models/` directory
+- **Training:** Pre-trained on historical stock data
+- **Scaling:** StandardScaler for feature normalization
+
+**Input Features (9 technical indicators):**
+```
+1. Open         - Opening price
+2. High         - High price
+3. Low          - Low price
+4. Close        - Closing price
+5. Volume       - Trading volume
+6. Return       - Return percentage
+7. SMA_10       - 10-day Simple Moving Average
+8. SMA_50       - 50-day Simple Moving Average
+9. Volatility_10 - 10-day historical volatility
+```
+
+**Output Format:**
+```json
+{
+  "prediction": "Buy" | "Don't Buy",
+  "probability": 0.85,
+  "confidence": "High" | "Medium" | "Low",
+  "recommendation": "Strong buy signal with 85% probability"
+}
+```
+
+**Confidence Levels:**
+- **High:** probability ≥0.8 or ≤0.2
+- **Medium:** probability ≥0.6 or ≤0.4
+- **Low:** probability between 0.4-0.6
+
+**API Endpoints:**
+- `POST /api/predict-stock` - Stock prediction with ML model
+- `GET /api/predict-stock/health` - Model health check
+
+**Use Cases:**
+- Quick buy/sell predictions based on technical data
+- Complement to 6-agent AutoGen analysis
+- Automated trading signal generation
+- Backtesting strategy validation
+
+---
+
 ## 🔄 System Architecture Diagram
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                     FRONTEND (React + Vite)                  │
-│                      Port: 3000                              │
-└─────────────────────────────────────────────────────────────┘
-                              │
-                ┌─────────────┼─────────────┐
-                │             │             │
-                ▼             ▼             ▼
-        ┌───────────┐  ┌──────────┐  ┌──────────┐
-        │ Portfolio │  │  Stock   │  │ Enhanced │
-        │   Intel   │  │ Analysis │  │   Chat   │
-        └───────────┘  └──────────┘  └──────────┘
-                │             │        │      │
-                │             │        │      │
-                ▼             ▼        ▼      ▼
-┌──────────────────────────────────────────────────────────────┐
-│              BACKEND (FastAPI on Port 8000)                  │
-├──────────────────────────────────────────────────────────────┤
-│  ┌──────────────┐  ┌─────────────┐  ┌────────────────────┐  │
-│  │  LangGraph   │  │   AutoGen   │  │   RAG System       │  │
-│  │  5 Agents    │  │   6 Agents  │  │   FAISS + LLM      │  │
-│  └──────────────┘  └─────────────┘  └────────────────────┘  │
-└──────────────────────────────────────────────────────────────┘
-                │             │              │
-                ▼             ▼              ▼
-        ┌──────────┐  ┌──────────┐  ┌──────────────┐
-        │PostgreSQL│  │  Alpha   │  │   OpenAI     │
-        │Portfolio │  │ Vantage  │  │  GPT-4o-mini │
-        │   Data   │  │   API    │  │   + Tavily   │
-        └──────────┘  └──────────┘  └──────────────┘
+┌──────────────────────────────────────────────────────────────────┐
+│                   FRONTEND (React + Vite)                         │
+│                         Port: 3000                                │
+└──────────────────────────────────────────────────────────────────┘
+                                │
+                ┌───────────────┼───────────────┬──────────────┐
+                │               │               │              │
+                ▼               ▼               ▼              ▼
+        ┌───────────┐   ┌──────────┐   ┌──────────┐   ┌──────────┐
+        │ Portfolio │   │  Stock   │   │ Enhanced │   │    ML    │
+        │   Intel   │   │ Analysis │   │   Chat   │   │Prediction│
+        └───────────┘   └──────────┘   └──────────┘   └──────────┘
+                │               │         │      │            │
+                │               │         │      │            │
+                ▼               ▼         ▼      ▼            ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                 BACKEND (FastAPI on Port 8000)                      │
+├─────────────────────────────────────────────────────────────────────┤
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌───────────────────┐  │
+│  │LangGraph │  │ AutoGen  │  │   RAG    │  │   ML Model        │  │
+│  │5 Agents  │  │6 Agents  │  │FAISS+LLM │  │Random Forest      │  │
+│  └──────────┘  └──────────┘  └──────────┘  └───────────────────┘  │
+└─────────────────────────────────────────────────────────────────────┘
+                │         │          │              │
+                ▼         ▼          ▼              ▼
+        ┌──────────┐  ┌──────────┐  ┌──────────────┐  ┌──────────┐
+        │PostgreSQL│  │  Alpha   │  │   OpenAI     │  │  Saved   │
+        │Portfolio │  │ Vantage  │  │  GPT-4o-mini │  │  Models  │
+        │   Data   │  │   API    │  │   + Tavily   │  │  (ML)    │
+        └──────────┘  └──────────┘  └──────────────┘  └──────────┘
 ```
 
 ---
@@ -179,6 +230,9 @@ if (isGeneralMarket) {
 - **Embeddings:** sentence-transformers
 - **Web Search:** Tavily API (for DataAnalyst)
 - **Market Data:** Alpha Vantage API
+- **ML Model:** scikit-learn (Random Forest)
+- **ML Persistence:** joblib (model serialization)
+- **Data Processing:** pandas, numpy
 
 ---
 
@@ -199,6 +253,10 @@ if (isGeneralMarket) {
 
 ### RAG System
 - `POST /api/rag/query` - General market knowledge queries
+
+### ML Prediction
+- `POST /api/predict-stock` - ML-based stock buy/sell prediction
+- `GET /api/predict-stock/health` - Model health check
 
 ### Portfolio Data
 - `GET /api/portfolio/{client_id}` - Get client portfolio
@@ -254,15 +312,15 @@ npm run dev
 
 ## 📊 Feature Comparison
 
-| Feature | Portfolio Intelligence | Stock Analysis | Enhanced Chat |
-|---------|----------------------|----------------|---------------|
-| **Backend** | LangGraph | AutoGen | LangGraph + RAG |
-| **Agents** | 5 agents | 6 agents | 5 agents + RAG |
-| **Purpose** | Portfolio analysis | Trading decisions | Conversational Q&A |
-| **Data Source** | PostgreSQL + Market | Alpha Vantage + Web | Portfolio DB + Knowledge Base |
-| **Output** | Structured insights | Trading recommendation | Natural language answers |
-| **Real-time** | Yes (WebSocket) | No | Yes (WebSocket) |
-| **RAG** | No | No | Yes (for general questions) |
+| Feature | Portfolio Intelligence | Stock Analysis | Enhanced Chat | ML Prediction |
+|---------|----------------------|----------------|---------------|---------------|
+| **Backend** | LangGraph | AutoGen | LangGraph + RAG | Random Forest ML |
+| **Agents** | 5 agents | 6 agents | 5 agents + RAG | ML Model |
+| **Purpose** | Portfolio analysis | Trading decisions | Conversational Q&A | Buy/Sell signals |
+| **Data Source** | PostgreSQL + Market | Alpha Vantage + Web | Portfolio DB + Knowledge Base | Technical indicators |
+| **Output** | Structured insights | Trading recommendation | Natural language answers | Prediction + probability |
+| **Real-time** | Yes (WebSocket) | No | Yes (WebSocket) | Yes (API) |
+| **RAG** | No | No | Yes (for general questions) | No |
 
 ---
 
@@ -305,9 +363,12 @@ Home (/)
 ├─ 📈 Stock Analysis (/stock-analysis)
 │   └─ Select Company → Choose Question → Get Trading Recommendation
 │
-└─ 💬 Enhanced Chat (/chat)
-    ├─ Portfolio Questions → LangGraph Agents
-    └─ Market Questions → RAG System
+├─ 💬 Enhanced Chat (/chat)
+│   ├─ Portfolio Questions → LangGraph Agents
+│   └─ Market Questions → RAG System
+│
+└─ 🤖 ML Stock Prediction (/stock-prediction) [Future Frontend]
+    └─ Input Technical Indicators → Get ML Buy/Sell Signal
 ```
 
 ---
@@ -333,6 +394,11 @@ Home (/)
    - **Cause:** Limited knowledge base (only 2 documents)
    - **Solution:** Expand knowledge base using `add_documents.py`
 
+5. **ML Model Not Found**
+   - **Error:** "Model file not found in saved_models/"
+   - **Solution:** Ensure Random Forest model files exist in `saved_models/` directory
+   - **Files Required:** `random_forest_model.pkl`, `scaler.pkl`
+
 ---
 
 ## 📈 Future Enhancements
@@ -341,6 +407,8 @@ Home (/)
 - [ ] Expand RAG knowledge base to 40-60 documents
 - [ ] Add source citation UI in ChatMessages component
 - [ ] Improve error handling in agent workflows
+- [ ] Build frontend UI for ML Stock Prediction feature
+- [ ] Integrate ML predictions with AutoGen stock analysis
 
 ### Medium-term (1-2 months)
 - [ ] Add portfolio performance charts
@@ -353,6 +421,8 @@ Home (/)
 - [ ] Paper trading integration
 - [ ] Mobile app (React Native)
 - [ ] Advanced technical analysis tools
+- [ ] ML model retraining pipeline with latest market data
+- [ ] Ensemble ML models (Random Forest + XGBoost + LSTM)
 
 ---
 

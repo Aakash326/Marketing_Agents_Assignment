@@ -10,7 +10,7 @@ or click on **"System Design"** from the navigation menu or home page.
 
 ## 📑 Presentation Overview
 
-The presentation contains **13 comprehensive slides** covering all required components:
+The presentation contains **14 comprehensive slides** covering all required components:
 
 ### Slide Structure:
 
@@ -23,10 +23,11 @@ The presentation contains **13 comprehensive slides** covering all required comp
 7. **External System Integration** - APIs & data sources
 8. **AutoGen 6-Agent Stock Analysis** - Trading workflow
 9. **RAG System Architecture** - Knowledge base design
-10. **Production System Architecture** (BONUS) - Deployment infrastructure
-11. **Production Go-to-Market Plan** (BONUS) - 4-phase roadmap
-12. **Key System Features** - Feature summary
-13. **Thank You** - Closing slide
+10. **ML Stock Prediction Model** - Random Forest ML feature
+11. **Production System Architecture** (BONUS) - Deployment infrastructure
+12. **Production Go-to-Market Plan** (BONUS) - 4-phase roadmap
+13. **Key System Features** - Feature summary
+14. **Thank You** - Closing slide
 
 ---
 
@@ -69,7 +70,18 @@ Six main integrations:
 5. **RAG System** - Knowledge base (FAISS + HuggingFace)
 6. **SEC EDGAR** - Company filings
 
-### 🌟 BONUS: Production System Architecture (Slide 10)
+### ✅ ML Stock Prediction Model (Slide 10)
+Machine Learning integration:
+- **Algorithm**: Random Forest Classifier
+- **Model Storage**: Pre-trained model in `saved_models/`
+- **Input Features**: 9 technical indicators (Open, High, Low, Close, Volume, Return, SMA_10, SMA_50, Volatility_10)
+- **Output**: Buy/Don't Buy prediction with probability and confidence level
+- **API Endpoints**:
+  - `POST /api/predict-stock` - Get ML prediction
+  - `GET /api/predict-stock/health` - Model health check
+- **Use Cases**: Quick trading signals, complement to AutoGen analysis, backtesting
+
+### 🌟 BONUS: Production System Architecture (Slide 11)
 Covers:
 - **Containerization**: Docker, Kubernetes
 - **Load Balancing**: NGINX, auto-scaling
@@ -78,7 +90,7 @@ Covers:
 - **Security**: OAuth 2.0, JWT, API rate limiting
 - **Scalability**: Horizontal scaling, distributed task queue
 
-### 🌟 BONUS: Production Go-to-Market Plan (Slide 11)
+### 🌟 BONUS: Production Go-to-Market Plan (Slide 12)
 4-Phase deployment roadmap:
 - **Phase 1**: Foundation (Weeks 1-2) - Infrastructure setup
 - **Phase 2**: Beta Launch (Weeks 3-4) - Testing with 10 users
@@ -131,9 +143,10 @@ Covers:
 2. **Slides 3-6**: Deep dive into LangGraph architecture
 3. **Slide 7**: Show external integrations
 4. **Slides 8-9**: Additional systems (AutoGen & RAG)
-5. **Slides 10-11**: Production deployment (BONUS)
-6. **Slide 12**: Feature summary
-7. **Slide 13**: Close
+5. **Slide 10**: ML Stock Prediction model
+6. **Slides 11-12**: Production deployment (BONUS)
+7. **Slide 13**: Feature summary
+8. **Slide 14**: Close
 
 ---
 
@@ -192,10 +205,11 @@ Your presentation covers:
 ✅ **Data flow between agents** - Code examples in Slide 5
 ✅ **Decision-making processes** - 4 categories in Slide 6
 ✅ **External system integration** - 6 systems in Slide 7
-✅ **Production system architecture** (BONUS) - Infrastructure in Slide 10
-✅ **Production go-to-market plan** (BONUS) - Roadmap in Slide 11
+✅ **ML Stock Prediction** - Random Forest model in Slide 10
+✅ **Production system architecture** (BONUS) - Infrastructure in Slide 11
+✅ **Production go-to-market plan** (BONUS) - Roadmap in Slide 12
 
-**Total Slides**: 13 comprehensive slides with visual diagrams, code examples, and detailed explanations.
+**Total Slides**: 14 comprehensive slides with visual diagrams, code examples, and detailed explanations.
 
 ---
 

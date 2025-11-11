@@ -107,6 +107,29 @@ def market_node(state: Dict) -> Dict:
                 # Provide a diversified set of popular stocks for analysis
                 tickers = ["AAPL", "MSFT", "NVDA", "GOOGL"]
 
+        # Method 4: Check for general market news queries
+        # If still no tickers and query is about market news, use major indices
+        if not tickers:
+            news_patterns = [
+                r'market\s+news',
+                r'today.*market',
+                r'latest.*market',
+                r'market.*today',
+                r'what.*happening.*market',
+                r'market.*update',
+                r'stock\s+market\s+news',
+                r'^news',  # Just "news"
+                r'today.*news',
+                r'latest.*news'
+            ]
+
+            query_lower = query.lower()
+            is_general_news_query = any(re.search(pattern, query_lower) for pattern in news_patterns)
+
+            if is_general_news_query:
+                # For general market news, use major indices/popular stocks
+                tickers = ["SPY", "QQQ", "AAPL", "MSFT"]
+
         # Remove duplicates
         tickers = list(set(tickers))
 

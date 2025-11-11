@@ -68,24 +68,34 @@ def create_fast_6agent_team():
         print("💡 Please check your agent configurations and API keys.")
         raise
 
-async def run_6agent_analysis(stock_symbol: str, question: str):
+async def run_6agent_analysis(stock_symbol: str, question: str, portfolio_data: Dict[str, Any] = None):
     """
     Main entry point for 6-agent stock analysis.
     Alias for run_fast_6agent_analysis for backwards compatibility.
     """
-    return await run_fast_6agent_analysis(stock_symbol, question)
+    return await run_fast_6agent_analysis(stock_symbol, question, portfolio_data)
 
 
-async def run_fast_6agent_analysis(stock_symbol: str, question: str):
+async def run_fast_6agent_analysis(stock_symbol: str, question: str, portfolio_data: Dict[str, Any] = None):
     """Run fast 6-agent analysis using proven 7-agent pattern"""
     from datetime import datetime
 
     # Create team using proven method
     team = create_fast_6agent_team()
 
+    # Add portfolio context to the question if provided
+    portfolio_context = ""
+    if portfolio_data and portfolio_data.get('holdings'):
+        holdings = portfolio_data['holdings']
+        if stock_symbol in holdings:
+            holding = holdings[stock_symbol]
+            portfolio_context = f"\n\nPORTFOLIO CONTEXT: User currently owns {holding['shares']} shares of {stock_symbol} (${holding['value']:,.0f}, {holding['pct']:.1f}% of portfolio)."
+        else:
+            portfolio_context = f"\n\nPORTFOLIO CONTEXT: User does NOT currently own {stock_symbol}. This would be a NEW position."
+
     # Fast 6-agent question pattern - one message per agent
     # Simpler, more direct question to ensure agent participation
-    enhanced_question = f"""TRADING ANALYSIS REQUEST: {question} for {stock_symbol}
+    enhanced_question = f"""TRADING ANALYSIS REQUEST: {question} for {stock_symbol}{portfolio_context}
 
 AGENT WORKFLOW:
 1. OrganiserAgent: Get current market data for {stock_symbol}
@@ -108,8 +118,8 @@ Each agent should respond with their analysis. Start the analysis now."""
     agent_outputs = {}
     all_messages = []
     final_report = ""
-    recommendation = "HOLD"
-    confidence = 50
+    recommendation = None  # Don't set default - force extraction
+    confidence = None       # Don't set default - force extraction
 
     try:
         result_stream = team.run_stream(task=task)
@@ -141,33 +151,83 @@ Each agent should respond with their analysis. Start the analysis now."""
                     # Extract final report from ReportAgent
                     if source == 'ReportAgent':
                         final_report = content
-                        # Try to extract recommendation and confidence using precise regex
+                        print(f"\n🔍 Extracting recommendation and confidence from ReportAgent output...")
+                        
+                        # Try to extract recommendation and confidence using improved regex
                         import re
 
-                        # Extract recommendation - look for "RECOMMENDATION:" followed by the action
-                        rec_match = re.search(r'RECOMMENDATION:\s*\*?\*?([A-Z]+)\s*[-\s]', content, re.IGNORECASE)
+                        # Extract recommendation - look for "RECOMMENDATION:" with flexible formatting
+                        # Pattern 1: 📊 **RECOMMENDATION:** BUY - MSFT
+                        rec_match = re.search(r'RECOMMENDATION:\*?\*?\s*([A-Z\s\-\']+?)(?:\n|$)', content, re.IGNORECASE | re.MULTILINE)
                         if rec_match:
-                            recommendation = rec_match.group(1).upper()
-                        else:
-                            # Fallback: Check if it explicitly says BUY, SELL, or HOLD near the beginning
-                            first_500 = content[:500].upper()
-                            if 'RECOMMENDATION: BUY' in first_500 or 'RECOMMEND: BUY' in first_500:
-                                recommendation = 'BUY'
-                            elif 'RECOMMENDATION: SELL' in first_500 or 'RECOMMEND: SELL' in first_500:
-                                recommendation = 'SELL'
-                            elif 'RECOMMENDATION: HOLD' in first_500 or 'RECOMMEND: HOLD' in first_500:
+                            rec_text = rec_match.group(1).strip()
+                            print(f"   📊 Found RECOMMENDATION line: '{rec_text}'")
+                            # Extract action - check for negative patterns FIRST
+                            rec_upper = rec_text.upper()
+                            
+                            # Check negative patterns first (DON'T BUY, DON'T SELL, etc.)
+                            if "DON'T BUY" in rec_upper or "DONT BUY" in rec_upper or "DO NOT BUY" in rec_upper:
+                                recommendation = 'AVOID'
+                            elif "DON'T SELL" in rec_upper or "DONT SELL" in rec_upper:
                                 recommendation = 'HOLD'
+                            # Then check for WAIT/HOLD
+                            elif 'WAIT' in rec_upper:
+                                recommendation = 'WAIT'
+                            elif 'AVOID' in rec_upper:
+                                recommendation = 'AVOID'
+                            elif 'HOLD' in rec_upper:
+                                recommendation = 'HOLD'
+                            # Finally check positive patterns
+                            elif 'STRONG BUY' in rec_upper:
+                                recommendation = 'STRONG BUY'
+                            elif 'BUY' in rec_upper:
+                                recommendation = 'BUY'
+                            elif 'SELL' in rec_upper:
+                                recommendation = 'SELL'
+                            else:
+                                # Take first meaningful word (skip articles and prepositions)
+                                words = rec_text.split()
+                                recommendation = words[0].upper() if words else 'HOLD'
+                            print(f"   ✅ Extracted recommendation: {recommendation}")
+                        
+                        # If still not found, try more aggressive search
+                        if not recommendation:
+                            # Look for "ANSWER: YES" or "ANSWER: NO" patterns
+                            answer_match = re.search(r'ANSWER:\s*\*?\*?\s*(YES|NO)', content, re.IGNORECASE)
+                            if answer_match:
+                                recommendation = 'BUY' if answer_match.group(1).upper() == 'YES' else 'WAIT'
+                                print(f"   ✅ Extracted recommendation from ANSWER: {recommendation}")
+                            else:
+                                # Last resort: search entire content for recommendation keywords
+                                if re.search(r'\b(STRONG\s+)?BUY\b', content, re.IGNORECASE):
+                                    recommendation = 'BUY'
+                                    print(f"   ✅ Found BUY keyword in content")
+                                elif re.search(r'\bSELL\b', content, re.IGNORECASE):
+                                    recommendation = 'SELL'
+                                    print(f"   ✅ Found SELL keyword in content")
+                                elif re.search(r'\bHOLD\b', content, re.IGNORECASE):
+                                    recommendation = 'HOLD'
+                                    print(f"   ✅ Found HOLD keyword in content")
 
-                        # Extract confidence level - look for "CONFIDENCE LEVEL:" followed by percentage
-                        conf_match = re.search(r'CONFIDENCE LEVEL:\s*(\d+)/10', content, re.IGNORECASE)
+                        # Extract confidence level - look for "CONFIDENCE LEVEL:" with multiple patterns
+                        # Pattern 1: 💪 **CONFIDENCE LEVEL:** 7/10 (with emoji and markdown)
+                        conf_match = re.search(r'CONFIDENCE\s+LEVEL:\*?\*?\s*(\d+)/10', content, re.IGNORECASE)
                         if conf_match:
                             # Convert X/10 to percentage
                             confidence = int(conf_match.group(1)) * 10
+                            print(f"   💪 Extracted confidence from 'CONFIDENCE LEVEL:': {confidence}%")
                         else:
-                            # Look for direct percentage
-                            conf_match = re.search(r'confidence[:\s]+(\d+)%', content, re.IGNORECASE)
+                            # Pattern 2: Look for direct percentage with various formats
+                            conf_match = re.search(r'(?:CONFIDENCE|Confidence)[:\s]+\*?\*?\s*(\d+)%', content, re.IGNORECASE)
                             if conf_match:
                                 confidence = int(conf_match.group(1))
+                                print(f"   💪 Extracted confidence from percentage: {confidence}%")
+                            else:
+                                # Pattern 3: Look for X/10 format anywhere (including standalone)
+                                conf_match = re.search(r'(?:^|\s)(\d+)/10(?:\s|$)', content, re.MULTILINE)
+                                if conf_match:
+                                    confidence = int(conf_match.group(1)) * 10
+                                    print(f"   💪 Extracted confidence from X/10 format: {confidence}%")
 
                 # Check for completion markers
                 if any(marker in content for marker in [
@@ -191,6 +251,57 @@ Each agent should respond with their analysis. Start the analysis now."""
 
         print(f"\n✅ Analysis complete! {message_count} total messages.")
         print(f"🤖 Agents that responded: {list(set(agent_responses))}")
+
+        # Clean up debug markers from final report (Issue #6)
+        if final_report:
+            debug_markers = [
+                "FINAL_ANALYSIS_COMPLETE",
+                "RISK_ANALYSIS_COMPLETE",
+                "MARKET_DATA_COMPLETE",
+                "QUANTITATIVE_ANALYSIS_COMPLETE",
+                "STRATEGY_DEVELOPMENT_COMPLETE",
+                "DATA_ANALYSIS_COMPLETE"
+            ]
+            for marker in debug_markers:
+                final_report = final_report.replace(marker, "").strip()
+
+        # Set intelligent defaults ONLY if extraction failed
+        if not recommendation:
+            # Try to infer from the report content if we have it
+            if final_report:
+                report_upper = final_report.upper()
+                if 'STRONG BUY' in report_upper or 'RECOMMEND BUYING' in report_upper:
+                    recommendation = 'BUY'
+                    print("⚠️ Recommendation extracted from report content: BUY")
+                elif 'AVOID' in report_upper or 'DO NOT BUY' in report_upper:
+                    recommendation = 'AVOID'
+                    print("⚠️ Recommendation extracted from report content: AVOID")
+                else:
+                    recommendation = 'HOLD'  # Safe default
+                    print("⚠️ Could not extract recommendation, defaulting to: HOLD")
+            else:
+                recommendation = 'HOLD'
+                print("⚠️ No report generated, defaulting recommendation to: HOLD")
+
+        if confidence is None:
+            # Try to find confidence anywhere in the report
+            if final_report:
+                import re
+                # Look for any number followed by /10 or %
+                conf_match = re.search(r'(?:confidence|CONFIDENCE).*?(\d+)(?:/10|%)', final_report, re.IGNORECASE)
+                if conf_match:
+                    val = int(conf_match.group(1))
+                    confidence = val * 10 if val <= 10 else val
+                    print(f"⚠️ Confidence extracted from report: {confidence}%")
+                else:
+                    confidence = 70  # Default to 70% if we have a report but no confidence
+                    print(f"⚠️ Could not extract confidence, defaulting to: 70%")
+            else:
+                confidence = 50
+                print("⚠️ No report generated, defaulting confidence to: 50%")
+
+        print(f"\n📊 Final Recommendation: {recommendation}")
+        print(f"💪 Confidence: {confidence}%")
 
         # Return structured result matching backend expectations
         return {

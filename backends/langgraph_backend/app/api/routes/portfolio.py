@@ -19,14 +19,18 @@ router = APIRouter()
 def get_current_price(symbol: str, fallback_price: float) -> float:
     """
     Fetch current market price for a symbol using yfinance.
-    
+
     Args:
         symbol: Stock ticker symbol
         fallback_price: Purchase price to use if fetch fails
-        
+
     Returns:
         Current market price or fallback price
     """
+    # Special case: CASH always has a price of $1.00
+    if symbol.upper() == "CASH":
+        return 1.00
+
     try:
         ticker = yf.Ticker(symbol)
         # Try to get current price from fast_info
@@ -36,18 +40,18 @@ def get_current_price(symbol: str, fallback_price: float) -> float:
                 return round(float(current_price), 2)
         except:
             pass
-        
+
         # Fallback: Try historical data (last close)
         hist = ticker.history(period='1d')
         if not hist.empty:
             current_price = hist['Close'].iloc[-1]
             if current_price and current_price > 0:
                 return round(float(current_price), 2)
-        
+
         # If all fails, return purchase price (no change)
         logger.warning(f"Could not fetch price for {symbol}, using purchase price")
         return fallback_price
-        
+
     except Exception as e:
         logger.error(f"Error fetching price for {symbol}: {e}")
         return fallback_price

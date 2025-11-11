@@ -45,7 +45,7 @@ const SystemDesignPresentation = () => {
             transition={{ delay: 0.8 }}
             className="text-xl text-gray-500"
           >
-            LangGraph + AutoGen + RAG Integration
+            LangGraph + AutoGen + RAG + ML Integration
           </motion.div>
         </div>
       )
@@ -57,38 +57,47 @@ const SystemDesignPresentation = () => {
       type: "content",
       content: (
         <div className="space-y-6">
-          <div className="grid grid-cols-3 gap-6">
+          <div className="grid grid-cols-4 gap-4">
             <motion.div
               whileHover={{ scale: 1.05 }}
-              className="bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded-xl border-2 border-blue-300"
+              className="bg-gradient-to-br from-blue-50 to-blue-100 p-5 rounded-xl border-2 border-blue-300"
             >
-              <div className="text-4xl mb-4">🎯</div>
-              <h3 className="text-xl font-bold mb-2">LangGraph Backend</h3>
-              <p className="text-sm text-gray-700">Portfolio intelligence with 5-agent workflow</p>
+              <div className="text-4xl mb-3">🎯</div>
+              <h3 className="text-lg font-bold mb-2">LangGraph Backend</h3>
+              <p className="text-xs text-gray-700">Portfolio intelligence with 5-agent workflow</p>
             </motion.div>
 
             <motion.div
               whileHover={{ scale: 1.05 }}
-              className="bg-gradient-to-br from-purple-50 to-purple-100 p-6 rounded-xl border-2 border-purple-300"
+              className="bg-gradient-to-br from-purple-50 to-purple-100 p-5 rounded-xl border-2 border-purple-300"
             >
-              <div className="text-4xl mb-4">⚡</div>
-              <h3 className="text-xl font-bold mb-2">AutoGen Backend</h3>
-              <p className="text-sm text-gray-700">6-agent stock analysis workflow</p>
+              <div className="text-4xl mb-3">⚡</div>
+              <h3 className="text-lg font-bold mb-2">AutoGen Backend</h3>
+              <p className="text-xs text-gray-700">6-agent stock analysis workflow</p>
             </motion.div>
 
             <motion.div
               whileHover={{ scale: 1.05 }}
-              className="bg-gradient-to-br from-green-50 to-green-100 p-6 rounded-xl border-2 border-green-300"
+              className="bg-gradient-to-br from-green-50 to-green-100 p-5 rounded-xl border-2 border-green-300"
             >
-              <div className="text-4xl mb-4">📚</div>
-              <h3 className="text-xl font-bold mb-2">RAG System</h3>
-              <p className="text-sm text-gray-700">Knowledge base for market education</p>
+              <div className="text-4xl mb-3">📚</div>
+              <h3 className="text-lg font-bold mb-2">RAG System</h3>
+              <p className="text-xs text-gray-700">Knowledge base for market education</p>
+            </motion.div>
+
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              className="bg-gradient-to-br from-emerald-50 to-emerald-100 p-5 rounded-xl border-2 border-emerald-300"
+            >
+              <div className="text-4xl mb-3">🤖</div>
+              <h3 className="text-lg font-bold mb-2">ML Prediction</h3>
+              <p className="text-xs text-gray-700">Random Forest stock prediction model</p>
             </motion.div>
           </div>
 
           <div className="bg-gray-50 p-6 rounded-xl">
             <h3 className="text-2xl font-bold mb-4">Tech Stack</h3>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-3 gap-4">
               <div>
                 <h4 className="font-semibold mb-2">Backend:</h4>
                 <ul className="list-disc ml-6 space-y-1 text-sm">
@@ -105,6 +114,15 @@ const SystemDesignPresentation = () => {
                   <li>Tailwind CSS</li>
                   <li>Framer Motion</li>
                   <li>Recharts for visualizations</li>
+                </ul>
+              </div>
+              <div>
+                <h4 className="font-semibold mb-2">AI/ML:</h4>
+                <ul className="list-disc ml-6 space-y-1 text-sm">
+                  <li>scikit-learn (Random Forest)</li>
+                  <li>FAISS (Vector Store)</li>
+                  <li>sentence-transformers</li>
+                  <li>pandas, numpy</li>
                 </ul>
               </div>
             </div>
@@ -524,63 +542,63 @@ const SystemDesignPresentation = () => {
             <div className="grid grid-cols-2 gap-3">
               {[
                 {
-                  icon: "🎯",
-                  name: "Risk Assessment Agent",
-                  role: "Portfolio risk analysis & diversification",
+                  icon: "🗂️",
+                  name: "OrganiserAgent",
+                  role: "Market data orchestration & coordination",
                   details: [
-                    "Calculates portfolio beta and volatility metrics",
-                    "Evaluates sector concentration risks",
-                    "Recommends diversification strategies"
+                    "Retrieves real-time stock data from Alpha Vantage",
+                    "Provides price, volume, P/E ratio, RSI, MACD signals",
+                    "Coordinates workflow execution between agents"
+                  ]
+                },
+                {
+                  icon: "⚠️",
+                  name: "RiskManager",
+                  role: "Portfolio risk assessment & position sizing",
+                  details: [
+                    "Calculates optimal position size using Kelly Criterion",
+                    "Assesses portfolio volatility and correlation risks",
+                    "Recommends stop-loss levels and risk budget allocation"
                   ]
                 },
                 {
                   icon: "📊",
-                  name: "Technical Analysis Agent",
-                  role: "Chart patterns & indicators",
+                  name: "DataAnalyst",
+                  role: "Fundamental analysis & web research",
                   details: [
-                    "Analyzes price charts and technical indicators (RSI, MACD)",
-                    "Identifies support/resistance levels",
-                    "Detects trend patterns and momentum signals"
+                    "Conducts web research using Tavily API",
+                    "Analyzes earnings reports, revenue growth, and fundamentals",
+                    "Evaluates company health and competitive positioning"
                   ]
                 },
                 {
-                  icon: "💰",
-                  name: "Fundamental Analysis Agent",
-                  role: "Financial metrics & valuation",
+                  icon: "📈",
+                  name: "QuantitativeAnalyst",
+                  role: "Technical analysis & signal processing",
                   details: [
-                    "Analyzes P/E ratio, EPS, revenue growth",
-                    "Reads SEC filings (10-K, 10-Q) for company health",
-                    "Evaluates intrinsic value vs market price"
+                    "Analyzes technical indicators (RSI, MACD, moving averages)",
+                    "Identifies support/resistance levels and trends",
+                    "Provides buy/sell/hold signals with confidence levels"
                   ]
                 },
                 {
-                  icon: "📰",
-                  name: "Sentiment Analysis Agent",
-                  role: "News & social media sentiment",
+                  icon: "🎯",
+                  name: "StrategyDeveloper",
+                  role: "Trading strategy & execution planning",
                   details: [
-                    "Analyzes market news for sentiment signals",
-                    "Monitors company announcements and earnings calls",
-                    "Assesses public perception and market psychology"
+                    "Develops entry/exit strategies based on multi-factor analysis",
+                    "Recommends target prices and stop-loss levels",
+                    "Creates actionable trading plans with time horizons"
                   ]
                 },
                 {
-                  icon: "⚖️",
-                  name: "Compliance Agent",
-                  role: "Regulatory checks & constraints",
+                  icon: "📋",
+                  name: "ReportAgent",
+                  role: "Final decision synthesis & reporting",
                   details: [
-                    "Ensures recommendations comply with regulations",
-                    "Checks for insider trading restrictions",
-                    "Validates investment suitability criteria"
-                  ]
-                },
-                {
-                  icon: "🤝",
-                  name: "Coordinator Agent",
-                  role: "Synthesis & final recommendation",
-                  details: [
-                    "Aggregates insights from all specialist agents",
-                    "Resolves conflicting recommendations via voting",
-                    "Generates final investment decision with rationale"
+                    "Synthesizes all agent analyses into final recommendation",
+                    "Provides BUY/SELL/HOLD decision with confidence score",
+                    "Generates comprehensive investment report with risk/reward"
                   ]
                 }
               ].map((agent, idx) => (
@@ -613,8 +631,9 @@ const SystemDesignPresentation = () => {
             <div className="mt-4 bg-white p-3 rounded-lg">
               <h4 className="font-bold text-sm mb-2">💬 Communication Pattern</h4>
               <p className="text-xs text-gray-700">
-                Agents communicate via AutoGen's GroupChat mechanism, sharing analysis and building consensus through multi-round discussions.
-                The Coordinator orchestrates the workflow, ensuring all perspectives are considered before generating final investment recommendations.
+                Agents communicate via AutoGen's RoundRobinGroupChat mechanism in a sequential workflow. OrganiserAgent retrieves market data first,
+                then RiskManager, DataAnalyst, QuantitativeAnalyst, and StrategyDeveloper provide their analyses. Finally, ReportAgent synthesizes
+                all insights into a comprehensive investment recommendation with BUY/SELL/HOLD decision.
               </p>
             </div>
           </div>
@@ -692,7 +711,111 @@ const SystemDesignPresentation = () => {
       )
     },
 
-    // Slide 10: Production Architecture (Bonus)
+    // Slide 10: ML Stock Prediction
+    {
+      title: "ML Stock Prediction Model",
+      type: "content",
+      content: (
+        <div className="space-y-6">
+          <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-6 rounded-xl">
+            <h3 className="text-2xl font-bold mb-4">🤖 Random Forest Machine Learning Model</h3>
+
+            <div className="grid grid-cols-2 gap-4 mb-4">
+              <div className="bg-white p-4 rounded-lg shadow">
+                <div className="text-3xl mb-2">🧠</div>
+                <h4 className="font-bold mb-2">Model Details</h4>
+                <ul className="text-sm space-y-1">
+                  <li>• <strong>Algorithm:</strong> Random Forest Classifier</li>
+                  <li>• <strong>Storage:</strong> Pre-trained in saved_models/</li>
+                  <li>• <strong>Scaling:</strong> StandardScaler for normalization</li>
+                  <li>• <strong>Framework:</strong> scikit-learn + joblib</li>
+                </ul>
+              </div>
+
+              <div className="bg-white p-4 rounded-lg shadow">
+                <div className="text-3xl mb-2">📊</div>
+                <h4 className="font-bold mb-2">Output Format</h4>
+                <ul className="text-sm space-y-1">
+                  <li>• <strong>Prediction:</strong> Buy / Don't Buy</li>
+                  <li>• <strong>Probability:</strong> 0.0 - 1.0 confidence score</li>
+                  <li>• <strong>Confidence:</strong> High / Medium / Low</li>
+                  <li>• <strong>Recommendation:</strong> Detailed explanation</li>
+                </ul>
+              </div>
+            </div>
+
+            <div className="bg-white p-4 rounded-lg shadow mb-4">
+              <h4 className="font-bold mb-3">📈 Input Features (9 Technical Indicators):</h4>
+              <div className="grid grid-cols-3 gap-3 text-xs">
+                {[
+                  { name: "Open", desc: "Opening price" },
+                  { name: "High", desc: "High price" },
+                  { name: "Low", desc: "Low price" },
+                  { name: "Close", desc: "Closing price" },
+                  { name: "Volume", desc: "Trading volume" },
+                  { name: "Return", desc: "Return percentage" },
+                  { name: "SMA_10", desc: "10-day moving avg" },
+                  { name: "SMA_50", desc: "50-day moving avg" },
+                  { name: "Volatility_10", desc: "10-day volatility" }
+                ].map((feature, idx) => (
+                  <div key={idx} className="bg-blue-50 p-2 rounded">
+                    <p className="font-semibold text-blue-900">{feature.name}</p>
+                    <p className="text-gray-600">{feature.desc}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="bg-white p-4 rounded-lg shadow">
+                <h4 className="font-bold mb-2">📡 API Endpoints:</h4>
+                <ul className="text-sm space-y-2">
+                  <li className="bg-gray-50 p-2 rounded font-mono text-xs">
+                    POST /api/predict-stock
+                  </li>
+                  <li className="bg-gray-50 p-2 rounded font-mono text-xs">
+                    GET /api/predict-stock/health
+                  </li>
+                </ul>
+              </div>
+
+              <div className="bg-white p-4 rounded-lg shadow">
+                <h4 className="font-bold mb-2">🎯 Confidence Levels:</h4>
+                <ul className="text-sm space-y-1">
+                  <li>• <strong className="text-green-600">High:</strong> probability ≥0.8 or ≤0.2</li>
+                  <li>• <strong className="text-yellow-600">Medium:</strong> probability ≥0.6 or ≤0.4</li>
+                  <li>• <strong className="text-orange-600">Low:</strong> probability 0.4-0.6</li>
+                </ul>
+              </div>
+            </div>
+
+            <div className="bg-white p-4 rounded-lg shadow mt-4">
+              <h4 className="font-bold mb-2">💡 Use Cases:</h4>
+              <div className="grid grid-cols-2 gap-3 text-sm">
+                <div className="flex items-start gap-2">
+                  <span className="text-green-600">✓</span>
+                  <span>Quick buy/sell signals based on technical data</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="text-green-600">✓</span>
+                  <span>Complement to 6-agent AutoGen analysis</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="text-green-600">✓</span>
+                  <span>Automated trading signal generation</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="text-green-600">✓</span>
+                  <span>Backtesting strategy validation</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )
+    },
+
+    // Slide 11: Production Architecture (Bonus)
     {
       title: "Production System Architecture",
       type: "content",

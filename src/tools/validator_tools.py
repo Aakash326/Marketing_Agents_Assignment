@@ -434,7 +434,8 @@ def check_data_sufficiency(
         "RETURN", "RETURNS", "GAIN", "GAINS", "LOSS", "LOSSES", "VALUE", "VALUES",
         "TOTAL", "HOLD", "HOLDING", "WORTH", "PORTFOLIO", "PORTFOLIOS",
         "RISK", "RISKS", "PROFILE", "DIVERSITY", "DIVERSIFIED", "ALLOCATION",
-        "CLT", "CLASS", "BUY", "SELL", "TRADE", "SHOULD", "WOULD", "COULD"
+        "CLT", "CLASS", "BUY", "SELL", "TRADE", "SHOULD", "WOULD", "COULD",
+        "NEWS", "TODAY", "LATEST", "UPDATE", "UPDATES"  # News-related terms
     }
 
     # Filter out common words first
@@ -456,8 +457,8 @@ def check_data_sufficiency(
             if ticker not in known_tickers:
                 if "portfolio" in query_lower or "my" in query_lower:
                     return (False, f"Your portfolio doesn't contain {ticker}. Did you mean a different stock?")
-                else:
-                    return (False, f"I don't have market data for {ticker}. Would you like me to search for it?")
+                # For market queries, allow the query to proceed - let market_agent try to fetch data
+                # This enables automatic searching for any ticker without asking for confirmation
 
     # Check for portfolio queries without portfolio data
     portfolio_keywords = ["my stocks", "my holdings", "my portfolio", "what do i own"]

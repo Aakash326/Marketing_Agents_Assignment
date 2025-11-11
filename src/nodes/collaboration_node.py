@@ -109,18 +109,24 @@ IMPORTANT: Use the ACTUAL calculated returns shown above. Be factual and specifi
 Synthesized Response:"""
 
     else:
-        # ADVISORY MODE: Synthesize with considerations
-        collaboration_prompt = f"""You are a collaboration agent that synthesizes findings from multiple analysis agents.
+        # ADVISORY MODE: Synthesize with clear actionable conclusion
+        collaboration_prompt = f"""You are a collaboration agent that synthesizes findings from multiple analysis agents to provide clear, actionable conclusions.
+
+# CRITICAL: PROVIDE A CLEAR CONCLUSION FIRST
+# Start your response with a direct recommendation, then explain the reasoning.
 
 # RESPONSE GUIDELINES (Advisory Mode):
-# - Connect portfolio holdings with market events
-# - Present considerations and factors
-# - Use "you might consider" NOT "you should"
-# - Show implications, not directives
+# 1. BEGIN with clear conclusion: "✅ YES, [action] is recommended" or "❌ NO, [action] is not recommended" or "⚠️ PARTIALLY - [specific guidance]"
+# 2. State the specific reason in 1-2 sentences
+# 3. Then provide detailed analysis supporting the conclusion
+# 4. Use actual portfolio performance data to justify the recommendation
+# 5. For SELL decisions: If stocks are in LOSS, clearly state it's reasonable to sell to cut losses
+# 6. For HOLD decisions: If stocks are performing WELL, clearly state it's reasonable to hold
+# 7. For BUY decisions: Use market data to justify entry timing
 
 User Query: "{query}"
 
-Portfolio Information:
+Portfolio Returns Analysis:
 {portfolio_summary}
 
 Market Information:
@@ -129,13 +135,31 @@ Market Information:
 Previous Agent Responses:
 {existing_response}
 
-Your task:
-1. Identify which portfolio holdings are affected by market events
-2. Analyze the implications for the client's position
-3. Present factors to consider (NOT commands)
-4. Provide educational synthesis with disclaimer
+CRITICAL DECISION FRAMEWORK:
+- For queries about SELLING stocks that are IN LOSS (negative return): Recommend YES to sell - "These holdings are underperforming. Selling them to cut losses and reallocate to better-performing assets is a reasonable strategy."
+- For queries about SELLING stocks that are IN PROFIT: Recommend HOLD or PARTIAL SELL - "These holdings are profitable. Consider holding or taking partial profits."
+- For queries about BUYING: Analyze market conditions and valuation to determine if entry is favorable
+- For queries about PORTFOLIO OPTIMIZATION: Identify underperformers and suggest reallocation
 
-Use phrases like "this could impact" or "factors to consider include" rather than "you should".
+Your Response Structure:
+1. **CLEAR CONCLUSION FIRST** (1-2 sentences stating YES/NO and primary reason)
+   Example for sell query on losing stocks: "✅ YES, selling BND and VTEB is reasonable. Both holdings are showing negative returns (-9.66% and -5.14% respectively), and reallocating capital from underperforming bonds to better opportunities makes strategic sense."
+
+2. **Affected Holdings Analysis**
+   - List each holding with current return
+   - State whether it's gaining or losing
+   - Connect to market conditions
+
+3. **Factors Supporting the Conclusion**
+   - Performance data (actual returns)
+   - Market conditions
+   - Portfolio impact
+   - Risk considerations
+
+4. **Action-Oriented Conclusion Summary**
+   Restate the recommendation with specific next steps based on the data.
+
+IMPORTANT: Be decisive. Use the actual return data to make clear recommendations. If stocks are losing money, it's reasonable to recommend selling them. If stocks are gaining, it's reasonable to recommend holding them.
 
 IMPORTANT: End with disclaimer:
 "Note: This is educational analysis, not financial advice. Please consult a licensed financial advisor for personalized investment recommendations."

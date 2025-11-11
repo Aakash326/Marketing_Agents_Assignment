@@ -15,12 +15,20 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
+class PortfolioData(BaseModel):
+    """Portfolio data structure."""
+    total_value: float = 100000.0
+    holdings: dict = {}
+    sector_exposure: dict = {}
+
+
 class StockAnalysisRequest(BaseModel):
     """Request model for stock analysis."""
     symbol: str
     portfolio_value: float = 100000.0
     risk_per_trade: float = 2.0
     question: Optional[str] = "Should I buy this stock?"
+    portfolio_data: Optional[PortfolioData] = None
 
 
 class StockAnalysisResponse(BaseModel):
@@ -47,10 +55,27 @@ async def analyze_stock(request: StockAnalysisRequest):
 
         logger.info(f"Successfully imported trading_workflow")
 
+        # Prepare portfolio data
+        portfolio_dict = None
+        if request.portfolio_data:
+            portfolio_dict = {
+                'total_value': request.portfolio_data.total_value,
+                'holdings': request.portfolio_data.holdings,
+                'sector_exposure': request.portfolio_data.sector_exposure
+            }
+        elif request.portfolio_value:
+            # Create default portfolio data from portfolio_value
+            portfolio_dict = {
+                'total_value': request.portfolio_value,
+                'holdings': {},
+                'sector_exposure': {}
+            }
+
         # Run the real 6-agent analysis
         result = await run_fast_6agent_analysis(
             stock_symbol=request.symbol,
-            question=request.question or "Should I buy this stock?"
+            question=request.question or "Should I buy this stock?",
+            portfolio_data=portfolio_dict
         )
         
         # Convert to response format (result is a dict)
